@@ -9,7 +9,7 @@ function Home() {
 
       <div className="max-w-7xl mx-auto py-12 px-6">
         <h2 className="text-3xl font-bold text-green-700">
-          Welcome to Heera's Vegetables
+          Welcome to Heera's Vegetables Shopee
         </h2>
 
         <p className="mt-4 text-gray-600">

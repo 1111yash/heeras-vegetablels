@@ -9,7 +9,7 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import Delivery from "./pages/Delivery";
 import Footer from "./components/Footer";
-import NotFound from "./pages/NotFound";
+import NotFound from "./pages/ErrorPage";
 
 function App() {
   return (
