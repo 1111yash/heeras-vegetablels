@@ -16,11 +16,11 @@ function Footer() {
         </p>
 
         <p>
-          📞 +91 YOUR_NUMBER
+          📞 +91 9022271773
         </p>
 
         <p>
-          ✉️ youremail@gmail.com
+          ✉️ yashwanjari550@gmail.com
         </p>
 
         <hr className="my-5 border-green-600" />
