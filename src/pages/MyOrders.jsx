@@ -13,7 +13,6 @@ function MyOrders() {
       alert("Enter Mobile Number");
       return;
     }
-
     setLoading(true);
     try {
       const snapshot = await get(ref(db, "orders"));
@@ -45,9 +44,8 @@ function MyOrders() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-3xl mx-auto p-6">
       <h1 className="text-3xl font-bold text-center text-green-700 mb-8">📦 My Orders</h1>
-
       <div className="flex gap-3 mb-8">
         <input
           type="text"
@@ -69,37 +67,39 @@ function MyOrders() {
           return (
             <div key={order.id} className="bg-white border rounded-2xl shadow-lg p-6 mb-8">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-green-700">Order #{order.id}</h2>
-                <span className={`px-4 py-1 rounded-full text-sm font-bold ${status.bg} ${status.color}`}>
+                <h2 className="text-lg font-bold">Order #{order.id}</h2>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold ${status.bg} ${status.color}`}>
                   {status.text}
                 </span>
               </div>
 
-              <p><strong>👤 Customer:</strong> {order.customerName}</p>
-              <hr className="my-4" />
-
-              {/* SAFE RENDERING: Check if order.items exists */}
-              {Array.isArray(order.items) ? (
-                order.items.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between border rounded-xl p-4 mb-4">
-                    <div className="flex gap-4 items-center">
-                      <img src={item.image} alt={item.name} className="w-16 h-16 rounded-lg object-cover" />
-                      <div>
-                        <h3 className="font-bold">{item.name}</h3>
-                        <p className="text-sm text-gray-500">{item.unitLabel}</p>
-                        <p className="text-green-700 font-bold text-sm">₹{item.price} x {item.quantity}</p>
+              {/* Items Section - Cart Style */}
+              <div className="border-t border-b py-4 mb-4">
+                {Array.isArray(order.items) ? (
+                  order.items.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between py-2">
+                      <div className="flex gap-4 items-center">
+                        <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover border" />
+                        <div>
+                          <p className="font-bold">{item.name}</p>
+                          <p className="text-xs text-gray-500">{item.unitLabel}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-green-700">₹{item.price * item.quantity}</p>
+                        <p className="text-xs">Qty: {item.quantity}</p>
                       </div>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 mb-4">Items: {order.items || "N/A"}</p>
-              )}
+                  ))
+                ) : (
+                  <p className="text-gray-500">Items: {order.items}</p>
+                )}
+              </div>
 
-              <div className="border-t pt-4">
-                <p className="text-2xl font-bold text-green-700">💰 Total : ₹{order.total || 0}</p>
-                <Link to={`/track-order?id=${order.id}`} className="mt-4 block text-center bg-blue-600 text-white py-3 rounded-xl font-bold">
-                  📍 Track Order
+              <div className="flex justify-between items-center">
+                <p className="text-xl font-bold text-green-700">Total: ₹{order.total || 0}</p>
+                <Link to={`/track-order?id=${order.id}`} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm">
+                  Track Order
                 </Link>
               </div>
             </div>

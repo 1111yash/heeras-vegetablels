@@ -18,8 +18,8 @@ function Checkout() {
   const deliveryCharge = totalPrice >= 399 ? 0 : 30;
   const finalTotal = totalPrice + deliveryCharge;
 
-  const currentHour = new Date().getHours();
-  const isShopOpen = currentHour >= 10 && currentHour < 22;
+  // Developer mode for testing: isShopOpen = true (Remove this for production)
+  const isShopOpen = true;
 
   const handleChange = (e) => {
     setCustomer({ ...customer, [e.target.name]: e.target.value });
@@ -36,6 +36,8 @@ function Checkout() {
     }
 
     const autoOrderId = "HV-" + Math.floor(10000 + Math.random() * 90000);
+
+    // Email ke liye string format (Purani functionality chalu rahegi)
     const itemsList = cart.map((i) => `• ${i.name} (${i.unitLabel}) × ${i.quantity} = ₹${i.price * i.quantity}`).join("\n");
 
     try {
@@ -48,6 +50,14 @@ function Checkout() {
         address: `${customer.address}, ${customer.landmark}, ${customer.pincode}`,
         total: finalTotal,
         timestamp: Date.now(),
+        // YAHAN HAI ASLI CHANGE: Items array ban kar ja raha hai
+        items: cart.map((i) => ({
+          name: i.name,
+          unitLabel: i.unitLabel,
+          quantity: i.quantity,
+          price: i.price,
+          image: i.image || "" // Image URL pass ho raha hai
+        })),
       });
 
       const templateParams = {
@@ -64,13 +74,14 @@ function Checkout() {
 
       const wantsWhatsApp = window.confirm("Send order details on WhatsApp?");
       if (wantsWhatsApp) {
-        const waMessage = `🥬 *New Order*\n📦 *ID:* ${autoOrderId}\n👤 *Name:* ${customer.name}\n🏠 *Address:* ${customer.address}\n💳 *Payment:* ${paymentMethod.toUpperCase()}\n\n🛒 *Items:*\n${itemsList}\n\n💰 *Total:* ₹${finalTotal}`;
+        const waMessage = `🥬 *New Order*\n📦 *ID:* ${autoOrderId}\n👤 *Name:* ${customer.name}\n🏠 *Address:* ${customer.address}\n\n🛒 *Items:*\n${itemsList}\n\n💰 *Total:* ₹${finalTotal}`;
         window.open(`https://wa.me/919022271773?text=${encodeURIComponent(waMessage)}`, "_blank");
       }
 
       alert("🎉 Order Placed Successfully!");
       navigate(`/track-order?id=${autoOrderId}`);
     } catch (error) {
+      console.error(error);
       alert("Error placing order.");
     }
   };
@@ -97,30 +108,24 @@ function Checkout() {
           ))}
           <div className="mt-4 text-2xl font-bold text-green-700">Total: ₹{finalTotal}</div>
 
-          <div className="mt-6 space-y-3">
-            <label className={`block p-4 border-2 rounded-xl cursor-pointer ${paymentMethod === "cod" ? "border-green-600 bg-green-50" : "border-gray-200"}`}>
-              <input type="radio" value="cod" checked={paymentMethod === "cod"} onChange={(e) => setPaymentMethod(e.target.value)} />
-              <span className="ml-2 font-bold">💵 Cash On Delivery</span>
-            </label>
-
-            <label className={`block p-4 border-2 rounded-xl cursor-pointer ${paymentMethod === "upi" ? "border-purple-600 bg-purple-50" : "border-gray-200"}`}>
-              <input type="radio" value="upi" checked={paymentMethod === "upi"} onChange={(e) => setPaymentMethod(e.target.value)} />
-              <span className="ml-2 font-bold">📱 UPI (PhonePe / GPay)</span>
-            </label>
-          </div>
-
-          {paymentMethod === "upi" && (
-            <div className="mt-4 p-4 bg-white rounded-xl text-center border border-purple-200">
-              <img src="/qr-code.jpeg" alt="QR" className="w-40 mx-auto" />
-              <p className="font-bold text-purple-700 mt-2">9022271773@ybl</p>
-              <button onClick={() => { navigator.clipboard.writeText("9022271773@ybl"); alert("Copied!"); }} className="mt-2 text-sm bg-purple-600 text-white px-4 py-1 rounded">Copy ID</button>
-            </div>
-          )}
-
           <button onClick={placeOrder} className="w-full mt-6 bg-green-600 text-white py-4 rounded-xl font-bold text-lg">
-            {paymentMethod === "upi" ? "✅ Confirm Payment & Order" : "🛒 Place Order"}
+            🛒 Place Order
           </button>
         </div>
+        {paymentMethod === "upi" && (
+          <div className="mt-4 p-4 bg-white rounded-xl text-center border border-purple-200">
+            <img src="/qr-code.jpeg" alt="QR" className="w-40 mx-auto" />
+            <p className="font-bold text-purple-700 mt-2">9022271773@ybl</p>
+
+            {/* YE NAYA BUTTON HAI */}
+            <a
+              href={`upi://pay?pa=9022271773@ybl&pn=HeeraVegetables&am=${finalTotal}&cu=INR`}
+              className="block mt-3 bg-purple-600 text-white py-2 rounded-lg font-bold"
+            >
+              Pay ₹{finalTotal} with UPI
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

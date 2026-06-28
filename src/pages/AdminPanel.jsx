@@ -63,12 +63,11 @@ function AdminPanel() {
                   <p className="font-semibold">{orders[id].customerName} | 📞 {orders[id].phone}</p>
                   <p className="text-xs text-gray-500">{new Date(orders[id].timestamp).toLocaleTimeString()}</p>
                 </div>
-                <div className={`px-3 py-1 rounded-full font-bold text-xs text-white ${
-                  orders[id].status === 0 ? 'bg-red-500' :
-                  orders[id].status === 1 ? 'bg-orange-500' : 
-                  orders[id].status === 2 ? 'bg-yellow-500' : 
-                  orders[id].status === 3 ? 'bg-blue-500' : 'bg-green-600'
-                }`}>
+                <div className={`px-3 py-1 rounded-full font-bold text-xs text-white ${orders[id].status === 0 ? 'bg-red-500' :
+                    orders[id].status === 1 ? 'bg-orange-500' :
+                      orders[id].status === 2 ? 'bg-yellow-500' :
+                        orders[id].status === 3 ? 'bg-blue-500' : 'bg-green-600'
+                  }`}>
                   {orders[id].status === 0 ? 'Cancelled' : orders[id].status === 1 ? 'Received' : orders[id].status === 2 ? 'Packing' : orders[id].status === 3 ? 'Out' : 'Delivered'}
                 </div>
               </div>
@@ -81,6 +80,13 @@ function AdminPanel() {
                     <button onClick={() => updateStatus(id, 3)} className="bg-blue-500 text-white px-3 py-1 rounded text-sm">Out</button>
                     <button onClick={() => updateStatus(id, 4)} className="bg-green-600 text-white px-3 py-1 rounded text-sm">Done</button>
                     <button onClick={() => cancelOrder(id)} className="bg-red-500 text-white px-3 py-1 rounded text-sm">Cancel</button>
+                    // status: 5 matlab 'Paid'
+                    <button
+                      onClick={() => updateStatus(id, 5)}
+                      className="bg-purple-600 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Paid
+                    </button>
                   </>
                 )}
                 <a href={`https://wa.me/91${orders[id].phone}`} target="_blank" rel="noreferrer" className="bg-green-500 text-white px-3 py-1 rounded text-sm">WhatsApp</a>
