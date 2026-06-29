@@ -10,6 +10,7 @@ import About from "./pages/About";
 import Delivery from "./pages/Delivery";
 import Footer from "./components/Footer";
 import NotFound from "./pages/ErrorPage";
+import TrackOrder from "./pages/TrackOrder"; // पाथ अब /pages/ हो गया है
 
 function App() {
   return (
@@ -25,6 +26,8 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/delivery" element={<Delivery />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/track-order" element={<TrackOrder />} />
+                                                      
       </Routes>
       
      

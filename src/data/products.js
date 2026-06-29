@@ -26,9 +26,35 @@ const products = [
  
 
 
-  // Eggs
-  { id: 18, name: "White Eggs (6 pcs)", price: 48, image: "/images/white egg.jpg", category: "Eggs" },
-  { id: 20, name: "Desi Eggs (6 pcs)", price: 90, image: "/images/desi egg.jpg", category: "Eggs" },
+
+ // Dairy
+
+{
+  id: 25,
+  name: " Buffallo Milk A2 Milk (Maroti Dairy)",
+  price: 90,
+  image: "/images/amul1l.jpg",
+  category: "Dairy",
+},
+
+{
+    id: "egg_01",
+    name: "Farm Fresh White Eggs",
+    category: "Eggs",
+    price: 9, // ₹7 प्रति अंडा
+    unitType: "pieces",
+    image: "/images/white egg.jpg"
+  },
+  {
+    id: "egg_02",
+    name: "  Free Range Country Eggs (देशी अंडे)  (Gawarani) ",
+    category: "Eggs",
+    price: 15 , // 15 प्रति अंडा
+    unitType: "pieces",
+    image: "images/desi egg.jpg"
+  },
+
+
 ];
 
 export default products;

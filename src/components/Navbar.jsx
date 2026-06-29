@@ -63,6 +63,14 @@ function Navbar() {
               Contact
             </Link>
           </li>
+
+          {/* 🚚 यहाँ नया Track Order बटन जोड़ दिया गया है */}
+          <li>
+            <Link to="/track-order" className="hover:text-yellow-300 font-medium">
+              Track Order
+            </Link>
+          </li>
+          
         </ul>
 
       </div>

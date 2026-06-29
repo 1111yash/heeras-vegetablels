@@ -7,25 +7,67 @@ function Products() {
   const { addToCart } = useCart();
 
   const [search, setSearch] = useState("");
-  const [selectedWeight, setSelectedWeight] = useState({});
+  const [selectedQty, setSelectedQty] = useState({});
   const [category, setCategory] = useState("All");
 
-  const calculatePrice = (pricePerKg, weight) => {
-    switch (weight) {
-      case "250":
-        return Math.round(pricePerKg * 0.25);
+  // कैटेगरी के आधार पर ऑटोमैटिक सही unitType तय करने वाला हेल्पर फंक्शन
+  const determineUnitType = (item) => {
+    if (item.unitType) return item.unitType; // अगर डेटा में पहले से है
+    
+    // अगर डेटा में नहीं है, तो कैटेगरी से पहचानो
+    const cat = item.category?.toLowerCase();
+    if (cat === "dairy") return "liquid";
+    if (cat === "eggs") return "pieces";
+    return "weight"; // डिफ़ॉल्ट सब्जियां
+  };
 
-      case "500":
-        return Math.round(pricePerKg * 0.5);
+  // मात्रा (Quantity) और टाइप के हिसाब से कीमत कैलकुलेट करने का फंक्शन
+  const calculatePrice = (pricePerUnit, qty, unitType) => {
+    const qtyNum = parseFloat(qty);
 
-      case "1000":
-        return pricePerKg;
+    if (unitType === "liquid") {
+      // दूध के लिए: बेस प्राइस 1 लीटर (1000ml) का है
+      return Math.round((pricePerUnit / 1000) * qtyNum);
+    } else if (unitType === "pieces") {
+      // अंडों के लिए: बेस प्राइस 1 पीस का है
+      return Math.round(pricePerUnit * qtyNum);
+    } else {
+      // सब्जियों के लिए: बेस प्राइस 1 किलो (1000g) का है
+      return Math.round((pricePerUnit / 1000) * qtyNum);
+    }
+  };
 
-      case "2000":
-        return pricePerKg * 2;
-
-      default:
-        return pricePerKg;
+  // ड्रॉपडाउन ऑप्शन्स तय करने का फंक्शन
+  const getUnitOptions = (unitType) => {
+    switch (unitType) {
+      case "liquid":
+        return {
+          defaultQty: "1000", // डिफ़ॉल्ट 1 लीटर
+          options: [
+            { value: "250", label: "250 ml" },
+            { value: "500", label: "500 ml" },
+            { value: "1000", label: "1 litre" },
+          ],
+        };
+      case "pieces":
+        return {
+          defaultQty: "6", // डिफ़ॉल्ट 6 पीस
+          options: [
+            { value: "1", label: "1 Piece" },
+            { value: "6", label: "6 Pieces" },
+            { value: "12", label: "12 Pieces (1 Dozen)" },
+          ],
+        };
+      default: // 'weight' यानी सब्जियां
+        return {
+          defaultQty: "1000", // डिफ़ॉल्ट 1 किलो
+          options: [
+            { value: "250", label: "250 g" },
+            { value: "500", label: "500 g" },
+            { value: "1000", label: "1 kg" },
+            { value: "2000", label: "2 kg" },
+          ],
+        };
     }
   };
 
@@ -51,9 +93,7 @@ function Products() {
             key={cat}
             onClick={() => setCategory(cat)}
             className={`px-4 py-2 rounded-lg ${
-              category === cat
-                ? "bg-green-600 text-white"
-                : "bg-gray-200"
+              category === cat ? "bg-green-600 text-white" : "bg-gray-200"
             }`}
           >
             {cat}
@@ -61,7 +101,7 @@ function Products() {
         ))}
       </div>
 
-      {/* Products */}
+      {/* Products Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products
           .filter((item) =>
@@ -71,8 +111,16 @@ function Products() {
             category === "All" ? true : item.category === category
           )
           .map((item) => {
-            const weight = selectedWeight[item.id] || "1000";
-            const price = calculatePrice(item.price, weight);
+            // यहाँ ऑटोमैटिक सही यूनिट टाइप निकाला जा रहा है
+            const actualUnitType = determineUnitType(item);
+            const { defaultQty, options } = getUnitOptions(actualUnitType);
+            
+            const qty = selectedQty[item.id] || defaultQty;
+            const price = calculatePrice(item.price, qty, actualUnitType);
+
+            // सही लेबल (जैसे 500 ml या 1 kg) स्क्रीन पर दिखाने के लिए
+            const currentOption = options.find((opt) => opt.value === qty);
+            const unitLabel = currentOption ? currentOption.label : qty;
 
             return (
               <div
@@ -94,23 +142,24 @@ function Products() {
 
                   <div className="mt-3">
                     <label className="text-sm font-medium">
-                      Select Weight
+                      Select Quantity
                     </label>
 
                     <select
-                      value={weight}
+                      value={qty}
                       onChange={(e) =>
-                        setSelectedWeight({
-                          ...selectedWeight,
+                        setSelectedQty({
+                          ...selectedQty,
                           [item.id]: e.target.value,
                         })
                       }
                       className="w-full mt-1 border rounded-lg p-2"
                     >
-                      <option value="250">250 g</option>
-                      <option value="500">500 g</option>
-                      <option value="1000">1 kg</option>
-                      <option value="2000">2 kg</option>
+                      {options.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -118,12 +167,13 @@ function Products() {
                     onClick={() => {
                       addToCart({
                         ...item,
-                        weight,
+                        quantity: qty,
+                        unitLabel,
                         price,
                       });
 
                       toast.success(
-                        `${item.name} (${weight}g) added to cart!`
+                        `${item.name} (${unitLabel}) added to cart!`
                       );
                     }}
                     className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
