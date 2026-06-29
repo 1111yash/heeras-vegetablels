@@ -14,21 +14,19 @@ function Cart() {
         <>
           {cart.map((item) => (
             <div
-              key={`${item.id}-${item.weight}`}
+              key={`${item.id}-${item.unitLabel || ""}`}
               className="flex justify-between items-center border-b py-4"
             >
               <div>
                 <h2 className="font-bold text-lg">{item.name}</h2>
 
                 <p className="text-gray-600">
-                  Weight:{" "}
-                  {item.weight === "250"
-                    ? "250 g"
-                    : item.weight === "500"
-                    ? "500 g"
-                    : item.weight === "1000"
-                    ? "1 kg"
-                    : "2 kg"}
+                  {item.unitLabel ||
+                    (item.category === "Dairy"
+                      ? "1 Litre"
+                      : item.category === "Eggs"
+                      ? "1 Piece"
+                      : "1 kg")}
                 </p>
 
                 <p className="text-green-700 font-semibold">

@@ -29,32 +29,34 @@ const products = [
 
  // Dairy
 
+// Dairy
 {
   id: 25,
-  name: " Buffallo Milk A2 Milk (Maroti Dairy)",
+  name: "Buffalo A2 Milk (Maroti Dairy)",
   price: 90,
   image: "/images/amul1l.jpg",
   category: "Dairy",
+  unitType: "liquid",
+},
+// Eggs
+
+{
+  id: "egg_01",
+  name: "Farm Fresh White Eggs",
+  category: "Eggs",
+  unitType: "pieces",
+  price: 9,
+  image: "/images/white egg.jpg",
 },
 
 {
-    id: "egg_01",
-    name: "Farm Fresh White Eggs",
-    category: "Eggs",
-    price: 9, // ₹7 प्रति अंडा
-    unitType: "pieces",
-    image: "/images/white egg.jpg"
-  },
-  {
-    id: "egg_02",
-    name: "  Free Range Country Eggs (देशी अंडे)  (Gawarani) ",
-    category: "Eggs",
-    price: 15 , // 15 प्रति अंडा
-    unitType: "pieces",
-    image: "images/desi egg.jpg"
-  },
-
-
+  id: "egg_02",
+  name: "Free Range Country Eggs (देशी अंडे)",
+  category: "Eggs",
+  unitType: "pieces",
+  price: 15,
+  image: "/images/desi egg.jpg",
+},
 ];
 
 export default products;
