@@ -8,12 +8,17 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
 
   const addToCart = (product) => {
-    const exist = cart.find((item) => item.id === product.id);
+    const exist = cart.find(
+      (item) =>
+        item.id === product.id &&
+        item.unitLabel === product.unitLabel
+    );
 
     if (exist) {
       setCart(
         cart.map((item) =>
-          item.id === product.id
+          item.id === product.id &&
+          item.unitLabel === product.unitLabel
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
@@ -23,21 +28,21 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const increaseQty = (id) => {
+  const increaseQty = (id, unitLabel) => {
     setCart(
       cart.map((item) =>
-        item.id === id
+        item.id === id && item.unitLabel === unitLabel
           ? { ...item, quantity: item.quantity + 1 }
           : item
       )
     );
   };
 
-  const decreaseQty = (id) => {
+  const decreaseQty = (id, unitLabel) => {
     setCart(
       cart
         .map((item) =>
-          item.id === id
+          item.id === id && item.unitLabel === unitLabel
             ? { ...item, quantity: item.quantity - 1 }
             : item
         )
@@ -45,10 +50,20 @@ export const CartProvider = ({ children }) => {
     );
   };
 
+  // Items Total
   const totalPrice = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
+
+  // Delivery Charge
+  const deliveryCharge = totalPrice >= 400 ? 0 : 30;
+
+  // Platform Fee
+  const platformFee = 5;
+
+  // Final Amount
+  const grandTotal = totalPrice + deliveryCharge + platformFee;
 
   return (
     <CartContext.Provider
@@ -58,10 +73,14 @@ export const CartProvider = ({ children }) => {
         increaseQty,
         decreaseQty,
         totalPrice,
+        deliveryCharge,
+        platformFee,
+        grandTotal,
       }}
     >
       {children}
     </CartContext.Provider>
   );
 };
+
 export default CartContext;
