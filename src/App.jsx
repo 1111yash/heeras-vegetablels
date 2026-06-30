@@ -13,6 +13,8 @@ import Delivery from "./pages/Delivery";
 import TrackOrder from "./pages/TrackOrder";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/ErrorPage";
+import MyOrders from "./pages/MyOrders";
+
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/delivery" element={<Delivery />} />
         <Route path="/track-order" element={<TrackOrder />} />
+        <Route path="/my-orders" element={<MyOrders />} />
+        
 
         {/* Admin Dashboard */}
         <Route

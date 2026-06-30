@@ -38,14 +38,17 @@ function Checkout() {
 
         try {
             // 1. Firebase Save
-            await set(ref(db, `orders/${autoOrderId}`), {
-                status: 1,
-                customerName: customer.name,
-                phone: customer.phone,
-                items: itemsList,
-                total: finalTotal,
-                timestamp: Date.now()
-            });
+          await set(ref(db, `orders/${autoOrderId}`), {
+  status: 1,
+  customerName: customer.name,
+  phone: customer.phone,
+
+  // 👇 Complete cart save hoga
+  items: cart,
+
+  total: finalTotal,
+  timestamp: Date.now(),
+});
 
             // 2. EmailJS - ईमेल भेजना
             const templateParams = {

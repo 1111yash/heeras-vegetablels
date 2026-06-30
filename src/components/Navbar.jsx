@@ -64,13 +64,20 @@ function Navbar() {
             </Link>
           </li>
 
+          <Link
+            to="/my-orders"
+            className="hover:text-yellow-300"
+          >
+            My Orders
+          </Link>
+
           {/* 🚚 यहाँ नया Track Order बटन जोड़ दिया गया है */}
           <li>
             <Link to="/track-order" className="hover:text-yellow-300 font-medium">
               Track Order
             </Link>
           </li>
-          
+
         </ul>
 
       </div>
