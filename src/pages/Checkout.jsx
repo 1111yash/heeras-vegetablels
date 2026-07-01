@@ -3,132 +3,335 @@ import { useState } from "react";
 import { ref, set } from "firebase/database";
 import { db } from "../src/firebase";
 import { useNavigate } from "react-router-dom";
-import emailjs from "@emailjs/browser";
 
 function Checkout() {
   const { cart, totalPrice } = useCart();
   const navigate = useNavigate();
 
   const [customer, setCustomer] = useState({
-    name: "", phone: "", address: "", landmark: "", pincode: "",
+    name: "",
+    phone: "",
+    address: "",
+    landmark: "",
+    pincode: "",
   });
 
   const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [isOrdered, setIsOrdered] = useState(false);
+  const [orderId, setOrderId] = useState("");
 
-  const deliveryCharge = totalPrice >= 399 ? 0 : 30;
-  const finalTotal = totalPrice + deliveryCharge;
-
-  // Developer mode for testing: isShopOpen = true (Remove this for production)
-  const isShopOpen = true;
+  // Bill Calculation
+  const subtotal = totalPrice;
+  const deliveryCharge = subtotal >= 399 ? 0 : 30;
+  const platformFee = 3;
+  const grandTotal = subtotal + deliveryCharge + platformFee;
 
   const handleChange = (e) => {
-    setCustomer({ ...customer, [e.target.name]: e.target.value });
+    setCustomer({
+      ...customer,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const placeOrder = async () => {
-    if (!isShopOpen) {
-      alert("Shop is currently closed. Open: 10 AM - 10 PM");
+    if (cart.length === 0) {
+      alert("Your cart is empty!");
       return;
     }
+
     if (!customer.name || !customer.phone || !customer.address) {
-      alert("Please fill in all delivery details!");
+      alert("Please fill all details!");
       return;
     }
 
-    const autoOrderId = "HV-" + Math.floor(10000 + Math.random() * 90000);
-
-    // Email ke liye string format (Purani functionality chalu rahegi)
-    const itemsList = cart.map((i) => `• ${i.name} (${i.unitLabel}) × ${i.quantity} = ₹${i.price * i.quantity}`).join("\n");
+    const autoOrderId =
+      "HV-" + Math.floor(10000 + Math.random() * 90000);
 
     try {
       await set(ref(db, `orders/${autoOrderId}`), {
         orderId: autoOrderId,
+
         status: 1,
+
         paymentMethod,
+
+        paymentStatus:
+          paymentMethod === "upi"
+            ? "Pending Verification"
+            : "Cash On Delivery",
+
         customerName: customer.name,
         phone: customer.phone,
+
         address: `${customer.address}, ${customer.landmark}, ${customer.pincode}`,
-        total: finalTotal,
-        timestamp: Date.now(),
-        // YAHAN HAI ASLI CHANGE: Items array ban kar ja raha hai
-        items: cart.map((i) => ({
-          name: i.name,
-          unitLabel: i.unitLabel,
-          quantity: i.quantity,
-          price: i.price,
-          image: i.image || "" // Image URL pass ho raha hai
+
+        items: cart.map((item) => ({
+          id: item.id,
+          name: item.name,
+          image: item.image,
+          price: item.price,
+          quantity: item.quantity,
+          unitLabel: item.unitLabel,
         })),
+
+        subtotal,
+        deliveryCharge,
+        platformFee,
+        total: grandTotal,
+        grandTotal,
+
+        timestamp: Date.now(),
       });
 
-      const templateParams = {
-        order_id: autoOrderId,
-        name: customer.name,
-        phone: customer.phone,
-        address: `${customer.address}, ${customer.landmark}, ${customer.pincode}`,
-        payment_method: paymentMethod === "upi" ? "UPI" : "COD",
-        message: itemsList,
-        total: "₹" + finalTotal,
-      };
+      setOrderId(autoOrderId);
+      setIsOrdered(true);
 
-      await emailjs.send("service_zxgku3f", "template_foc6ana", templateParams, "b8Qb45wp8S4PC1Mi8");
+      setTimeout(() => {
+        navigate(`/track-order?id=${autoOrderId}`);
+      }, 2500);
 
-      const wantsWhatsApp = window.confirm("Send order details on WhatsApp?");
-      if (wantsWhatsApp) {
-        const waMessage = `🥬 *New Order*\n📦 *ID:* ${autoOrderId}\n👤 *Name:* ${customer.name}\n🏠 *Address:* ${customer.address}\n\n🛒 *Items:*\n${itemsList}\n\n💰 *Total:* ₹${finalTotal}`;
-        window.open(`https://wa.me/919022271773?text=${encodeURIComponent(waMessage)}`, "_blank");
-      }
-
-      alert("🎉 Order Placed Successfully!");
-      navigate(`/track-order?id=${autoOrderId}`);
-    } catch (error) {
-      console.error(error);
-      alert("Error placing order.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to place order.");
     }
   };
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Checkout</h1>
-      <div className="grid md:grid-cols-2 gap-8">
-        <div className="space-y-4">
-          <input name="name" value={customer.name} onChange={handleChange} placeholder="Full Name" className="border p-3 rounded-lg w-full" />
-          <input name="phone" value={customer.phone} onChange={handleChange} placeholder="Mobile Number" className="border p-3 rounded-lg w-full" />
-          <textarea name="address" value={customer.address} onChange={handleChange} placeholder="Full Address" className="border p-3 rounded-lg w-full" />
-          <input name="landmark" value={customer.landmark} onChange={handleChange} placeholder="Landmark" className="border p-3 rounded-lg w-full" />
-          <input name="pincode" value={customer.pincode} onChange={handleChange} placeholder="Pincode" className="border p-3 rounded-lg w-full" />
-        </div>
+            {isOrdered ? (
 
-        <div className="bg-gray-100 rounded-xl p-6">
-          <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
-          {cart.map((item) => (
-            <div key={item.id} className="flex justify-between py-2 border-b">
-              <span>{item.name} x {item.quantity}</span>
-              <span className="font-bold">₹{item.price * item.quantity}</span>
+        <div className="bg-white rounded-3xl shadow-xl p-10 text-center">
+
+          <div className="text-7xl mb-5">🎉</div>
+
+          <h1 className="text-4xl font-bold text-green-700">
+            Order Placed Successfully
+          </h1>
+
+          <p className="mt-4 text-gray-600 text-lg">
+            Thank you for shopping with
+            <span className="font-bold text-green-700">
+              {" "}Heera's Vegetables
+            </span>
+          </p>
+
+          <div className="bg-green-50 rounded-2xl p-6 mt-8">
+
+            <div className="flex justify-between mb-3">
+              <span>Subtotal</span>
+              <b>₹{subtotal}</b>
             </div>
-          ))}
-          <div className="mt-4 text-2xl font-bold text-green-700">Total: ₹{finalTotal}</div>
 
-          <button onClick={placeOrder} className="w-full mt-6 bg-green-600 text-white py-4 rounded-xl font-bold text-lg">
-            🛒 Place Order
-          </button>
-        </div>
-        {paymentMethod === "upi" && (
-          <div className="mt-4 p-4 bg-white rounded-xl text-center border border-purple-200">
-            <img src="/qr-code.jpeg" alt="QR" className="w-40 mx-auto" />
-            <p className="font-bold text-purple-700 mt-2">9022271773@ybl</p>
+            <div className="flex justify-between mb-3">
+              <span>Delivery Charge</span>
+              <b>{deliveryCharge === 0 ? "FREE" : `₹${deliveryCharge}`}</b>
+            </div>
 
-            {/* YE NAYA BUTTON HAI */}
-            <a
-              href={`upi://pay?pa=9022271773@ybl&pn=HeeraVegetables&am=${finalTotal}&cu=INR`}
-              className="block mt-3 bg-purple-600 text-white py-2 rounded-lg font-bold"
-            >
-              Pay ₹{finalTotal} with UPI
-            </a>
+            <div className="flex justify-between mb-3">
+              <span>Platform Fee</span>
+              <b>₹{platformFee}</b>
+            </div>
+
+            <hr className="my-4" />
+
+            <div className="flex justify-between text-2xl font-bold text-green-700">
+              <span>Grand Total</span>
+              <span>₹{grandTotal}</span>
+            </div>
+
           </div>
-        )}
-      </div>
+
+          <button
+            onClick={() => navigate(`/track-order?id=${orderId}`)}
+            className="mt-8 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-bold"
+          >
+            📦 Track My Order
+          </button>
+
+        </div>
+
+      ) : (
+
+        <>
+
+          <h1 className="text-3xl font-bold mb-6">
+            Checkout
+          </h1>
+
+          <div className="bg-white rounded-2xl shadow p-6">
+
+            <h2 className="text-xl font-bold mb-5">
+              🚚 Delivery Details
+            </h2>
+
+            <div className="space-y-4">
+
+              <input
+                type="text"
+                name="name"
+                placeholder="Full Name"
+                value={customer.name}
+                onChange={handleChange}
+                className="w-full border rounded-xl p-3"
+              />
+
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Mobile Number"
+                value={customer.phone}
+                onChange={handleChange}
+                className="w-full border rounded-xl p-3"
+              />
+
+              <textarea
+                rows="3"
+                name="address"
+                placeholder="Complete Address"
+                value={customer.address}
+                onChange={handleChange}
+                className="w-full border rounded-xl p-3"
+              />
+
+              <input
+                type="text"
+                name="landmark"
+                placeholder="Landmark"
+                value={customer.landmark}
+                onChange={handleChange}
+                className="w-full border rounded-xl p-3"
+              />
+
+              <input
+                type="text"
+                name="pincode"
+                placeholder="Pincode"
+                value={customer.pincode}
+                onChange={handleChange}
+                className="w-full border rounded-xl p-3"
+              />
+
+            </div>
+
+          </div>
+
+          <div className="bg-white rounded-2xl shadow p-6 mt-6">
+
+            <h2 className="text-xl font-bold mb-5">
+              💳 Payment Method
+            </h2>
+
+            <label className="flex items-center gap-3 border rounded-xl p-4 cursor-pointer mb-3">
+
+              <input
+                type="radio"
+                value="cod"
+                checked={paymentMethod === "cod"}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              />
+
+              <span className="font-semibold">
+                💵 Cash On Delivery
+              </span>
+
+            </label>
+
+            <label className="flex items-center gap-3 border rounded-xl p-4 cursor-pointer">
+
+              <input
+                type="radio"
+                value="upi"
+                checked={paymentMethod === "upi"}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              />
+
+              <span className="font-semibold">
+                📱 UPI Payment
+              </span>
+
+            </label>
+
+            {paymentMethod === "upi" && (
+
+              <div className="mt-6 bg-purple-50 border rounded-2xl p-6 text-center">
+
+                <img
+                  src="/qr-code.jpeg"
+                  alt="QR Code"
+                  className="w-48 mx-auto rounded-xl"
+                />
+
+                <h3 className="font-bold mt-4">
+                  Scan QR & Pay
+                </h3>
+
+                <a
+                  href={`upi://pay?pa=9022271773@ybl&pn=HeeraVegetable&am=${grandTotal}&cu=INR`}
+                  className="block mt-5 bg-purple-600 text-white py-3 rounded-xl font-bold"
+                >
+                  Pay ₹{grandTotal}
+                </a>
+
+                <p className="mt-3 text-sm text-gray-600">
+                  After successful payment click <b>Place Order</b>.
+                </p>
+
+              </div>
+
+            )}
+
+          </div>
+
+                    <div className="bg-white rounded-2xl shadow p-6 mt-6">
+
+            <h2 className="text-2xl font-bold mb-5">
+              🧾 Bill Summary
+            </h2>
+
+            <div className="flex justify-between mb-3">
+              <span>🛒 Subtotal</span>
+              <span>₹{subtotal}</span>
+            </div>
+
+            <div className="flex justify-between mb-3">
+              <span>🚚 Delivery Charge</span>
+              <span className="font-bold">
+                {deliveryCharge === 0 ? (
+                  <span className="text-green-600">FREE</span>
+                ) : (
+                  `₹${deliveryCharge}`
+                )}
+              </span>
+            </div>
+
+            <div className="flex justify-between mb-3">
+              <span>🏪 Platform Fee</span>
+              <span>₹{platformFee}</span>
+            </div>
+
+            <hr className="my-4" />
+
+            <div className="flex justify-between text-3xl font-bold text-green-700">
+              <span>Total Payable</span>
+              <span>₹{grandTotal}</span>
+            </div>
+
+          </div>
+
+          <button
+            onClick={placeOrder}
+            className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl text-xl font-bold transition"
+          >
+            ✅ Place Order
+          </button>
+
+        </>
+      )}
+
     </div>
   );
 }
 
 export default Checkout;
+
+  
