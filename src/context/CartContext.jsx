@@ -60,7 +60,7 @@ export const CartProvider = ({ children }) => {
   const deliveryCharge = totalPrice >= 400 ? 0 : 30;
 
   // Platform Fee
-  const platformFee = 5;
+  const platformFee = 3;
 
   // Final Amount
   const grandTotal = totalPrice + deliveryCharge + platformFee;
