@@ -1,4 +1,6 @@
-import products from "../data/products";
+import { useEffect } from "react";
+import { ref, onValue } from "firebase/database";
+import { db } from "../src/firebase";
 import { useCart } from "../context/CartContext";
 import toast from "react-hot-toast";
 import { useState } from "react";
@@ -6,14 +8,35 @@ import { useState } from "react";
 function Products() {
   const { addToCart } = useCart();
 
+  const [products, setProducts] = useState([]);
+
   const [search, setSearch] = useState("");
   const [selectedQty, setSelectedQty] = useState({});
   const [category, setCategory] = useState("All");
 
+  useEffect(() => {
+    const productRef = ref(db, "products");
+
+    onValue(productRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+
+        const productArray = Object.entries(data).map(([id, product]) => ({
+          id,
+          ...product,
+        }));
+
+        setProducts(productArray);
+      } else {
+        setProducts([]);
+      }
+    });
+  }, []);
+
   // कैटेगरी के आधार पर ऑटोमैटिक सही unitType तय करने वाला हेल्पर फंक्शन
   const determineUnitType = (item) => {
     if (item.unitType) return item.unitType; // अगर डेटा में पहले से है
-    
+
     // अगर डेटा में नहीं है, तो कैटेगरी से पहचानो
     const cat = item.category?.toLowerCase();
     if (cat === "dairy") return "liquid";
@@ -92,9 +115,8 @@ function Products() {
           <button
             key={cat}
             onClick={() => setCategory(cat)}
-            className={`px-4 py-2 rounded-lg ${
-              category === cat ? "bg-green-600 text-white" : "bg-gray-200"
-            }`}
+            className={`px-4 py-2 rounded-lg ${category === cat ? "bg-green-600 text-white" : "bg-gray-200"
+              }`}
           >
             {cat}
           </button>
@@ -107,6 +129,7 @@ function Products() {
           .filter((item) =>
             item.name.toLowerCase().includes(search.toLowerCase())
           )
+          .filter((item) => item.inStock !== false)
           .filter((item) =>
             category === "All" ? true : item.category === category
           )
@@ -114,7 +137,7 @@ function Products() {
             // यहाँ ऑटोमैटिक सही यूनिट टाइप निकाला जा रहा है
             const actualUnitType = determineUnitType(item);
             const { defaultQty, options } = getUnitOptions(actualUnitType);
-            
+
             const qty = selectedQty[item.id] || defaultQty;
             const price = calculatePrice(item.price, qty, actualUnitType);
 

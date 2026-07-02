@@ -1,3 +1,5 @@
+
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ref, onValue, update } from "firebase/database";
@@ -11,6 +13,11 @@ function TrackOrder() {
   const [loading, setLoading] = useState(false);
 
   const [order, setOrder] = useState(null);
+
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [deliveryMessage, setDeliveryMessage] = useState("");
+  const [eta, setEta] = useState("");
 
   const steps = [
     "Order Confirmed",
@@ -43,10 +50,71 @@ function TrackOrder() {
   };
 
   useEffect(() => {
-    if (searchParams.get("id")) {
-      startTracking();
-    }
-  }, []);
+    if (!order) return;
+
+    if (order.status !== 3) {
+  setTimeLeft(0);
+  return;
+}
+
+// Agar Firebase me timer save nahi hai to timestamp se 20 min maan lo
+const estimated = order.estimatedDelivery
+  ? Number(order.estimatedDelivery)
+  : Number(order.timestamp) + 20 * 60 * 1000;
+
+    const interval = setInterval(() => {
+
+       if (!estimated || isNaN(estimated)) {
+    setEta("--:--");
+    setTimeLeft(0);
+    return;
+  }
+
+      const remaining = estimated - Date.now();
+
+      if (remaining <= 0) {
+        setTimeLeft(0);
+        setProgress(100);
+        setDeliveryMessage(
+          "⏳ Delivery is taking a little longer than expected."
+        );
+      } else {
+        setTimeLeft(remaining);
+
+        const elapsed = 20 * 60 * 1000 - remaining;
+
+        const percent = Math.min(
+          (elapsed / (20 * 60 * 1000)) * 100,
+          100
+        );
+
+        setProgress(percent);
+
+        if (percent < 25) {
+          setDeliveryMessage("🥬 Fresh vegetables are being packed carefully.");
+        } else if (percent < 50) {
+          setDeliveryMessage("🚚 Delivery partner has picked up your order.");
+        } else if (percent < 75) {
+          setDeliveryMessage("📍 Your order is nearby.");
+        } else {
+          setDeliveryMessage(
+            "🏠 Almost there. Please keep your phone available."
+          );
+        }
+
+        const arrival = new Date(estimated);
+
+        setEta(
+          arrival.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        );
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [order]);
 
   const cancelOrder = async () => {
     if (!window.confirm("Cancel this order?")) return;
@@ -68,6 +136,9 @@ function TrackOrder() {
       alert("Unable to cancel order");
     }
   };
+  const minutes = Math.floor(timeLeft / 60000);
+  const seconds = Math.floor((timeLeft % 60000) / 1000);
+  const timer = `${minutes}:${seconds.toString().padStart(2, "0")}`;
 
   if (loading) {
     return (
@@ -104,7 +175,7 @@ function TrackOrder() {
 
       {!order ? null : (
         <>
-                  {/* Customer Details */}
+          {/* Customer Details */}
 
           <div className="bg-white rounded-3xl shadow-lg p-6 border mb-6">
 
@@ -172,11 +243,10 @@ function TrackOrder() {
                   Status :
 
                   <span
-                    className={`ml-2 px-3 py-1 rounded-full text-sm font-bold ${
-                      order.paymentStatus === "Verified"
+                    className={`ml-2 px-3 py-1 rounded-full text-sm font-bold ${order.paymentStatus === "Verified"
                         ? "bg-green-100 text-green-700"
                         : "bg-yellow-100 text-yellow-700"
-                    }`}
+                      }`}
                   >
 
                     {order.paymentStatus}
@@ -299,7 +369,7 @@ function TrackOrder() {
 
             </div>
 
-            <hr className="my-4"/>
+            <hr className="my-4" />
 
             <div className="flex justify-between text-3xl font-bold text-green-700">
 
@@ -314,10 +384,10 @@ function TrackOrder() {
             </div>
 
           </div>
-          
-        
-      
-                  {/* Order Cancelled */}
+
+
+
+          {/* Order Cancelled */}
 
           {order.status === 0 && (
 
@@ -362,7 +432,82 @@ function TrackOrder() {
 
           )}
 
+
+
+          {/* 👇 DELIVERY TIMER CARD YAHAN PASTE KARO */}
+          
+
+          {order.status === 3 && (
+            <div className="bg-gradient-to-r from-green-600 via-green-500 to-emerald-600 rounded-3xl p-8 shadow-2xl text-white mb-6">
+
+              <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+
+                <div>
+                  <h2 className="text-3xl font-bold">
+                    🚚 Your Order is On the Way
+                  </h2>
+
+                  <p className="mt-3 text-lg">
+                    {deliveryMessage}
+                  </p>
+
+                  <p className="mt-4">
+                    🕒 ETA : <b>{eta}</b>
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <div className="bg-white text-green-700 rounded-full w-36 h-36 flex items-center justify-center">
+                    <div>
+                      <h1 className="text-4xl font-bold">
+                        {timer}
+                      </h1>
+                      <p className="text-sm">
+                        Remaining
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="mt-8 w-full bg-white/30 rounded-full h-4 overflow-hidden">
+                <div
+                  className="bg-white h-4 transition-all duration-1000"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+
+              <div className="mt-8">
+
+                <div className="flex justify-between text-3xl">
+
+                  <span>🏪</span>
+
+                  <div
+                    className="transition-all duration-1000"
+                    style={{
+                      transform: `translateX(${progress * 2.2}px)`
+                    }}
+                  >
+                    🚚
+                  </div>
+
+                  <span>🏠</span>
+
+                </div>
+
+                <p className="text-center mt-4 text-lg font-semibold">
+                  {deliveryMessage}
+                </p>
+
+              </div>
+
+            </div>
+          )}
+
           {/* Tracking Timeline */}
+
 
           {order.status > 0 && (
 
@@ -380,21 +525,20 @@ function TrackOrder() {
                 >
 
                   <div
-                    className={`w-6 h-6 rounded-full ${
-                      index + 1 <= order.status
-                        ? "bg-green-600"
-                        : "bg-gray-300"
-                    }`}
-                  />
+                    className={`w-8 h-8 rounded-full border-4 flex items-center justify-center ${index + 1 <= order.status
+                        ? "bg-green-600 border-green-600"
+                        : "bg-white border-gray-300"
+                      }`}
+                  >
+                    {index + 1 <= order.status && "✓"}
+                  </div>
 
                   <div>
-
                     <h3
-                      className={`font-bold ${
-                        index + 1 <= order.status
+                      className={`font-bold text-lg ${index + 1 <= order.status
                           ? "text-green-700"
-                          : "text-gray-500"
-                      }`}
+                          : "text-gray-400"
+                        }`}
                     >
                       {step}
                     </h3>
