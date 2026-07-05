@@ -50,6 +50,15 @@ const products = [
     image: "/images/desi egg.jpg",
     inStock: false, // 🔴 Out of Stock
   },
+  
+  {
+  id: 51,
+  name: "Orange Juice",
+  category: "Juices",
+  price: 80,
+  unit: "250 ml",
+  image: "image_url"
+}
 ];
 
 export default products;

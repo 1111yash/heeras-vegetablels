@@ -40,59 +40,72 @@ function Products() {
     // अगर डेटा में नहीं है, तो कैटेगरी से पहचानो
     const cat = item.category?.toLowerCase();
     if (cat === "dairy") return "liquid";
+    if (cat === "juices") return "juice";
     if (cat === "eggs") return "pieces";
     return "weight"; // डिफ़ॉल्ट सब्जियां
   };
 
   // मात्रा (Quantity) और टाइप के हिसाब से कीमत कैलकुलेट करने का फंक्शन
-  const calculatePrice = (pricePerUnit, qty, unitType) => {
-    const qtyNum = parseFloat(qty);
+const calculatePrice = (pricePerUnit, qty, unitType) => {
+  const qtyNum = parseFloat(qty);
 
-    if (unitType === "liquid") {
-      // दूध के लिए: बेस प्राइस 1 लीटर (1000ml) का है
-      return Math.round((pricePerUnit / 1000) * qtyNum);
-    } else if (unitType === "pieces") {
-      // अंडों के लिए: बेस प्राइस 1 पीस का है
-      return Math.round(pricePerUnit * qtyNum);
-    } else {
-      // सब्जियों के लिए: बेस प्राइस 1 किलो (1000g) का है
-      return Math.round((pricePerUnit / 1000) * qtyNum);
-    }
-  };
+  if (unitType === "liquid" || unitType === "juice") {
+    // Liquid aur Juice ke liye
+    return Math.round((pricePerUnit / 1000) * qtyNum);
+  } else if (unitType === "pieces") {
+    // Eggs ke liye
+    return Math.round(pricePerUnit * qtyNum);
+  } else {
+    // Vegetables ke liye
+    return Math.round((pricePerUnit / 1000) * qtyNum);
+  }
+};
 
   // ड्रॉपडाउन ऑप्शन्स तय करने का फंक्शन
-  const getUnitOptions = (unitType) => {
-    switch (unitType) {
-      case "liquid":
-        return {
-          defaultQty: "1000", // डिफ़ॉल्ट 1 लीटर
-          options: [
-            { value: "250", label: "250 ml" },
-            { value: "500", label: "500 ml" },
-            { value: "1000", label: "1 litre" },
-          ],
-        };
-      case "pieces":
-        return {
-          defaultQty: "6", // डिफ़ॉल्ट 6 पीस
-          options: [
-            { value: "1", label: "1 Piece" },
-            { value: "6", label: "6 Pieces" },
-            { value: "12", label: "12 Pieces (1 Dozen)" },
-          ],
-        };
-      default: // 'weight' यानी सब्जियां
-        return {
-          defaultQty: "1000", // डिफ़ॉल्ट 1 किलो
-          options: [
-            { value: "250", label: "250 g" },
-            { value: "500", label: "500 g" },
-            { value: "1000", label: "1 kg" },
-            { value: "2000", label: "2 kg" },
-          ],
-        };
-    }
-  };
+ const getUnitOptions = (unitType) => {
+  switch (unitType) {
+    case "liquid":
+      return {
+        defaultQty: "1000",
+        options: [
+          { value: "250", label: "250 ml" },
+          { value: "500", label: "500 ml" },
+          { value: "1000", label: "1 litre" },
+        ],
+      };
+
+    case "juice":
+      return {
+        defaultQty: "125",
+        options: [
+          { value: "125", label: "125 ml" },
+          { value: "250", label: "250 ml" },
+          { value: "500", label: "500 ml" },
+        ],
+      };
+
+    case "pieces":
+      return {
+        defaultQty: "6",
+        options: [
+          { value: "1", label: "1 Piece" },
+          { value: "6", label: "6 Pieces" },
+          { value: "12", label: "12 Pieces (1 Dozen)" },
+        ],
+      };
+
+    default:
+      return {
+        defaultQty: "1000",
+        options: [
+          { value: "250", label: "250 g" },
+          { value: "500", label: "500 g" },
+          { value: "1000", label: "1 kg" },
+          { value: "2000", label: "2 kg" },
+        ],
+      };
+  }
+};
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
@@ -111,7 +124,7 @@ function Products() {
 
       {/* Category */}
       <div className="flex flex-wrap gap-3 mb-6">
-        {["All", "Vegetables", "Dairy", "Eggs", "Bakery"].map((cat) => (
+        {["All", "Vegetables", "Dairy", "Eggs", "Juices"].map((cat) => (
           <button
             key={cat}
             onClick={() => setCategory(cat)}

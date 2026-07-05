@@ -403,6 +403,8 @@ function AdminPanel() {
                 <option value="weight">Weight</option>
                 <option value="pieces">Pieces</option>
                 <option value="liquid">Liquid</option>
+                <option value="juice">Juices</option>
+
               </select>
 
               <button
@@ -548,9 +550,11 @@ function AdminPanel() {
                           }
                           className="border rounded-xl p-3 w-full"
                         >
-                          <option value="weight">Weight</option>
-                          <option value="pieces">Pieces</option>
-                          <option value="liquid">Liquid</option>
+                         <option value="weight">Weight</option>
+<option value="pieces">Pieces</option>
+<option value="liquid">Liquid</option>
+<option value="juice">Juices</option>
+                          
                         </select>
 
                         <select
