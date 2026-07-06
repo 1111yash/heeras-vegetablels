@@ -1,9 +1,10 @@
 import { useEffect } from "react";
-import { ref, onValue } from "firebase/database";
+import { ref, onValue, get } from "firebase/database";
 import { db } from "../src/firebase";
 import { useCart } from "../context/CartContext";
 import toast from "react-hot-toast";
 import { useState } from "react";
+
 
 function Products() {
   const { addToCart } = useCart();
@@ -13,9 +14,12 @@ function Products() {
   const [search, setSearch] = useState("");
   const [selectedQty, setSelectedQty] = useState({});
   const [category, setCategory] = useState("All");
+  const [shopOpen, setShopOpen] = useState(true);
 
   useEffect(() => {
     const productRef = ref(db, "products");
+
+
 
     onValue(productRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -33,6 +37,16 @@ function Products() {
     });
   }, []);
 
+  useEffect(() => {
+    const shopRef = ref(db, "shopSettings/isOpen");
+
+    return onValue(shopRef, (snapshot) => {
+      setShopOpen(snapshot.val() ?? true);
+    });
+  }, []);
+
+
+
   // कैटेगरी के आधार पर ऑटोमैटिक सही unitType तय करने वाला हेल्पर फंक्शन
   const determineUnitType = (item) => {
     if (item.unitType) return item.unitType; // अगर डेटा में पहले से है
@@ -46,66 +60,55 @@ function Products() {
   };
 
   // मात्रा (Quantity) और टाइप के हिसाब से कीमत कैलकुलेट करने का फंक्शन
-const calculatePrice = (pricePerUnit, qty, unitType) => {
-  const qtyNum = parseFloat(qty);
+  const calculatePrice = (pricePerUnit, qty, unitType) => {
+    const qtyNum = parseFloat(qty);
 
-  if (unitType === "liquid" || unitType === "juice") {
-    // Liquid aur Juice ke liye
-    return Math.round((pricePerUnit / 1000) * qtyNum);
-  } else if (unitType === "pieces") {
-    // Eggs ke liye
-    return Math.round(pricePerUnit * qtyNum);
-  } else {
-    // Vegetables ke liye
-    return Math.round((pricePerUnit / 1000) * qtyNum);
-  }
-};
+    if (unitType === "liquid" || unitType === "juice") {
+      // Liquid aur Juice ke liye
+      return Math.round((pricePerUnit / 1000) * qtyNum);
+    } else if (unitType === "pieces") {
+      // Eggs ke liye
+      return Math.round(pricePerUnit * qtyNum);
+    } else {
+      // Vegetables ke liye
+      return Math.round((pricePerUnit / 1000) * qtyNum);
+    }
+  };
 
   // ड्रॉपडाउन ऑप्शन्स तय करने का फंक्शन
- const getUnitOptions = (unitType) => {
-  switch (unitType) {
-    case "liquid":
-      return {
-        defaultQty: "1000",
-        options: [
-          { value: "250", label: "250 ml" },
-          { value: "500", label: "500 ml" },
-          { value: "1000", label: "1 litre" },
-        ],
-      };
-
-    case "juice":
-      return {
-        defaultQty: "125",
-        options: [
-          { value: "125", label: "125 ml" },
-          { value: "250", label: "250 ml" },
-          { value: "500", label: "500 ml" },
-        ],
-      };
-
-    case "pieces":
-      return {
-        defaultQty: "6",
-        options: [
-          { value: "1", label: "1 Piece" },
-          { value: "6", label: "6 Pieces" },
-          { value: "12", label: "12 Pieces (1 Dozen)" },
-        ],
-      };
-
-    default:
-      return {
-        defaultQty: "1000",
-        options: [
-          { value: "250", label: "250 g" },
-          { value: "500", label: "500 g" },
-          { value: "1000", label: "1 kg" },
-          { value: "2000", label: "2 kg" },
-        ],
-      };
-  }
-};
+  const getUnitOptions = (unitType) => {
+    switch (unitType) {
+      case "juice":
+        return {
+          defaultQty: "125",
+          options: [
+            { value: "30", label: "30 ml" },
+            { value: "60", label: "60 ml" },
+            { value: "125", label: "125 ml" },
+            { value: "250", label: "250 ml" },
+          ],
+        };
+      case "pieces":
+        return {
+          defaultQty: "6", // डिफ़ॉल्ट 6 पीस
+          options: [
+            { value: "1", label: "1 Piece" },
+            { value: "6", label: "6 Pieces" },
+            { value: "12", label: "12 Pieces (1 Dozen)" },
+          ],
+        };
+      default: // 'weight' यानी सब्जियां
+        return {
+          defaultQty: "1000", // डिफ़ॉल्ट 1 किलो
+          options: [
+            { value: "250", label: "250 g" },
+            { value: "500", label: "500 g" },
+            { value: "1000", label: "1 kg" },
+            { value: "2000", label: "2 kg" },
+          ],
+        };
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
@@ -200,7 +203,13 @@ const calculatePrice = (pricePerUnit, qty, unitType) => {
                   </div>
 
                   <button
+                    disabled={!shopOpen}
                     onClick={() => {
+                      if (!shopOpen) {
+                        toast.error("🚫 Shop is temporarily closed");
+                        return;
+                      }
+
                       addToCart({
                         ...item,
                         quantity: qty,
@@ -208,13 +217,14 @@ const calculatePrice = (pricePerUnit, qty, unitType) => {
                         price,
                       });
 
-                      toast.success(
-                        `${item.name} (${unitLabel}) added to cart!`
-                      );
+                      toast.success(`${item.name} (${unitLabel}) added to cart!`);
                     }}
-                    className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
+                    className={`mt-4 w-full py-2 rounded-lg text-white ${shopOpen
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-gray-400 cursor-not-allowed"
+                      }`}
                   >
-                    Add to Cart
+                    {shopOpen ? "Add to Cart" : "🚫 Shop Closed"}
                   </button>
                 </div>
               </div>

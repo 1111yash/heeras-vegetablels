@@ -1,8 +1,9 @@
 import { useCart } from "../context/CartContext";
 import { useState } from "react";
-import { ref, set } from "firebase/database";
+
 import { db } from "../src/firebase";
 import { useNavigate } from "react-router-dom";
+import { ref, get, set } from "firebase/database";
 
 function Checkout() {
   const { cart, totalPrice } = useCart();
@@ -33,7 +34,17 @@ function Checkout() {
     });
   };
 
+
   const placeOrder = async () => {
+
+    const shopStatus = await get(ref(db, "shopSettings/isOpen"));
+
+    if (!shopStatus.val()) {
+      alert("🚫 Shop is temporarily closed. We are not accepting orders.");
+      return;
+    }
+
+
     if (cart.length === 0) {
       alert("Your cart is empty!");
       return;
@@ -98,7 +109,7 @@ function Checkout() {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-            {isOrdered ? (
+      {isOrdered ? (
 
         <div className="bg-white rounded-3xl shadow-xl p-10 text-center">
 
@@ -282,7 +293,7 @@ function Checkout() {
 
           </div>
 
-                    <div className="bg-white rounded-2xl shadow p-6 mt-6">
+          <div className="bg-white rounded-2xl shadow p-6 mt-6">
 
             <h2 className="text-2xl font-bold mb-5">
               🧾 Bill Summary
@@ -334,4 +345,3 @@ function Checkout() {
 
 export default Checkout;
 
-  

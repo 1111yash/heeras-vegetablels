@@ -33,6 +33,7 @@ function AdminPanel() {
 
   const [productName, setProductName] = useState("");
 
+
   const [productPrice, setProductPrice] = useState("");
 
   const [productCategory, setProductCategory] = useState("Vegetables");
@@ -42,6 +43,8 @@ function AdminPanel() {
   const [unitType, setUnitType] = useState("weight");
 
   const [inStock, setInStock] = useState(true);
+
+  const [shopOpen, setShopOpen] = useState(true);
 
 
 
@@ -88,6 +91,19 @@ function AdminPanel() {
     });
 
   }, []);
+
+  useEffect(() => {
+    const shopRef = ref(db, "shopSettings/isOpen");
+
+    return onValue(shopRef, (snapshot) => {
+      setShopOpen(snapshot.val() ?? true);
+    });
+  }, []);
+
+  const toggleShop = async () => {
+    await set(ref(db, "shopSettings/isOpen"), !shopOpen);
+  };
+
   const cancelOrder = (orderId) => {
     if (!window.confirm("Cancel this order?")) return;
 
@@ -279,6 +295,16 @@ function AdminPanel() {
             Archive Orders
           </button>
 
+          <button
+            onClick={toggleShop}
+            className={`px-5 py-3 rounded-xl font-bold text-white ${shopOpen
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-green-600 hover:bg-green-700"
+              }`}
+          >
+            {shopOpen ? "🔴 Close Shop" : "🟢 Open Shop"}
+          </button>
+
         </div>
 
         <div className="flex gap-4 mb-6">
@@ -286,8 +312,8 @@ function AdminPanel() {
           <button
             onClick={() => setActiveTab("orders")}
             className={`px-6 py-3 rounded-xl font-bold ${activeTab === "orders"
-                ? "bg-green-600 text-white"
-                : "bg-white"
+              ? "bg-green-600 text-white"
+              : "bg-white"
               }`}
           >
 
@@ -297,8 +323,8 @@ function AdminPanel() {
           <button
             onClick={() => setActiveTab("products")}
             className={`px-6 py-3 rounded-xl font-bold ${activeTab === "products"
-                ? "bg-green-600 text-white"
-                : "bg-white"
+              ? "bg-green-600 text-white"
+              : "bg-white"
               }`}
           >
 
@@ -471,8 +497,8 @@ function AdminPanel() {
                     <button
                       onClick={() => toggleStock(id, product.inStock)}
                       className={`w-full py-2 rounded-xl font-bold text-white ${product.inStock
-                          ? "bg-orange-500 hover:bg-orange-600"
-                          : "bg-green-600 hover:bg-green-700"
+                        ? "bg-orange-500 hover:bg-orange-600"
+                        : "bg-green-600 hover:bg-green-700"
                         }`}
                     >
                       {product.inStock ? "🔴 Out Of Stock" : "🟢 In Stock"}
@@ -550,11 +576,11 @@ function AdminPanel() {
                           }
                           className="border rounded-xl p-3 w-full"
                         >
-                         <option value="weight">Weight</option>
-<option value="pieces">Pieces</option>
-<option value="liquid">Liquid</option>
-<option value="juice">Juices</option>
-                          
+                          <option value="weight">Weight</option>
+                          <option value="pieces">Pieces</option>
+                          <option value="liquid">Liquid</option>
+                          <option value="juice">Juices</option>
+
                         </select>
 
                         <select
@@ -636,8 +662,8 @@ function AdminPanel() {
               <div
                 key={id}
                 className={`bg-white rounded-3xl shadow-xl border-l-8 p-6 ${order.status === 0
-                    ? "border-red-500"
-                    : "border-green-600"
+                  ? "border-red-500"
+                  : "border-green-600"
                   }`}
               >
 
@@ -715,8 +741,8 @@ function AdminPanel() {
 
                     <span
                       className={`px-4 py-2 rounded-full font-bold ${order.paymentStatus === "Verified"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-yellow-100 text-yellow-700"
                         }`}
                     >
                       {order.paymentStatus}

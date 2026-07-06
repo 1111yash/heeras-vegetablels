@@ -1,5 +1,8 @@
 import { useCart } from "../context/CartContext";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ref, onValue } from "firebase/database";
+import { db } from "../src/firebase";
 
 function Cart() {
   const {
@@ -11,6 +14,17 @@ function Cart() {
     platformFee,
     grandTotal,
   } = useCart();
+
+  const [shopOpen, setShopOpen] = useState(true);
+
+  useEffect(() => {
+    const shopRef = ref(db, "shopSettings/isOpen");
+
+    return onValue(shopRef, (snapshot) => {
+      setShopOpen(snapshot.val() ?? true);
+    });
+  }, []);
+
 
   return (
     <div className="max-w-5xl mx-auto p-6">
@@ -91,6 +105,12 @@ function Cart() {
 
             </div>
           ))}
+
+          {!shopOpen && (
+            <div className="bg-red-100 border border-red-500 text-red-700 p-4 rounded-xl mb-4 text-center font-bold">
+              🚫 Shop is temporarily closed. Orders are not being accepted.
+            </div>
+          )}
           {/* Bill Details */}
 
           <div className="mt-8 bg-white rounded-xl shadow-lg p-6 border">
@@ -202,15 +222,20 @@ function Cart() {
 
             </div>
 
-            <Link to="/checkout">
-
-              <button className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">
-
-                Proceed to Payment • ₹{grandTotal}
-
+            {shopOpen ? (
+              <Link to="/checkout">
+                <button className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">
+                  Proceed to Payment • ₹{grandTotal}
+                </button>
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="w-full mt-6 bg-gray-400 text-white py-4 rounded-xl font-bold text-lg cursor-not-allowed"
+              >
+                🚫 Shop Closed
               </button>
-
-            </Link>
+            )}
 
           </div>
         </>
