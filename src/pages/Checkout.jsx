@@ -23,7 +23,7 @@ function Checkout() {
 
   // Bill Calculation
   const subtotal = totalPrice;
-  const deliveryCharge = subtotal >= 399 ? 0 : 30;
+  const deliveryCharge = subtotal >= 199 ? 0 : 20;
   const platformFee = 3;
   const grandTotal = subtotal + deliveryCharge + platformFee;
 

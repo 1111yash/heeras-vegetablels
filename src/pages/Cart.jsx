@@ -136,7 +136,7 @@ function Cart() {
                 <div className="flex items-center gap-2">
 
                   <span className="line-through text-gray-400">
-                    ₹30
+                    ₹20
                   </span>
 
                   <span className="text-green-600 font-bold">
@@ -145,7 +145,7 @@ function Cart() {
 
                 </div>
               ) : (
-                <span>₹30</span>
+                <span>₹20</span>
               )}
 
             </div>
@@ -171,7 +171,7 @@ function Cart() {
                 </h3>
 
                 <p className="text-sm text-green-700 mt-1">
-                  You saved ₹30 on Delivery Charges.
+                  You saved ₹20 on Delivery Charges.
                 </p>
 
               </div>
@@ -183,11 +183,11 @@ function Cart() {
                 <div className="flex justify-between mb-2">
 
                   <span>
-                    Add ₹{400 - totalPrice} more for FREE Delivery
+                    Add ₹{200 - totalPrice} more for FREE Delivery
                   </span>
 
                   <span className="font-bold">
-                    ₹{totalPrice}/₹400
+                    ₹{totalPrice}/₹200
                   </span>
 
                 </div>
@@ -198,7 +198,7 @@ function Cart() {
                     className="bg-green-600 h-2 rounded-full"
                     style={{
                       width: `${Math.min(
-                        (totalPrice / 400) * 100,
+                        (totalPrice / 200) * 100,
                         100
                       )}%`,
                     }}

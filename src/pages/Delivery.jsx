@@ -41,8 +41,8 @@ function Delivery() {
           </h2>
 
           <ul className="list-disc pl-6 mt-2 text-gray-700 space-y-2">
-            <li>₹30 Delivery Charge on orders below ₹399.</li>
-            <li>🎉 FREE Delivery on orders of ₹399 or above.</li>
+            <li>₹20 Delivery Charge on orders below ₹199.</li>
+            <li>🎉 FREE Delivery on orders of ₹199 or above.</li>
           </ul>
         </div>
 
