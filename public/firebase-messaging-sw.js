@@ -17,4 +17,4 @@ messaging.onBackgroundMessage((payload) => {
     body: payload.notification.body,
     icon: "/logo192.png",
   });
-});yrs
+});
