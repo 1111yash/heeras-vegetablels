@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
+import { useEffect } from "react";
+import { requestNotificationPermission } from "./src/getToken";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
@@ -16,6 +17,12 @@ import AdminPanel from "./pages/AdminPanel"; // Make sure this file exists
 import NotFound from "./pages/ErrorPage";
 
 function App() {
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
+
   return (
     <BrowserRouter>
       <Navbar />
