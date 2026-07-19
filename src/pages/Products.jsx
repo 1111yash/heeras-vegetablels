@@ -164,7 +164,7 @@ function Products() {
             return (
               <div
                 key={item.id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition"
+                className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
               >
                 <img
                   src={item.image}

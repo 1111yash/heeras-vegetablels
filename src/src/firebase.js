@@ -1,6 +1,11 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
+import {
+  getAuth,
+  GoogleAuthProvider,
+} from "firebase/auth";
 import { getMessaging, isSupported } from "firebase/messaging";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyB4AoPUMHBZ3bMxpuA3lEOvRTxskStEdUo",
@@ -15,6 +20,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const db = getDatabase(app);
+
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
 
 // Firebase Cloud Messaging
 export const messaging = isSupported().then((supported) =>

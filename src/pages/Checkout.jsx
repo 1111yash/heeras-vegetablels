@@ -1,13 +1,24 @@
 import { useCart } from "../context/CartContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { db } from "../src/firebase";
 import { useNavigate } from "react-router-dom";
 import { ref, get, set } from "firebase/database";
+import { auth } from "../src/firebase";
+
 
 function Checkout() {
   const { cart, totalPrice } = useCart();
   const navigate = useNavigate();
+
+  useEffect(() => {
+  if (!auth.currentUser) {
+    alert("Please Login First");
+    navigate("/login");
+  }
+}, [navigate]);
+
+  
 
   const [customer, setCustomer] = useState({
     name: "",
@@ -16,6 +27,15 @@ function Checkout() {
     landmark: "",
     pincode: "",
   });
+  
+  useEffect(() => {
+  if (auth.currentUser) {
+    setCustomer((prev) => ({
+      ...prev,
+      name: auth.currentUser.displayName || "",
+    }));
+  }
+}, []);
 
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [isOrdered, setIsOrdered] = useState(false);
@@ -34,78 +54,96 @@ function Checkout() {
     });
   };
 
+  
+const placeOrder = async () => {
 
-  const placeOrder = async () => {
+  // Login Check
+  if (!auth.currentUser) {
+    alert("Please Login First");
+    navigate("/login");
+    return;
+  }
 
-    const shopStatus = await get(ref(db, "shopSettings/isOpen"));
+  // Shop Status Check
+  const shopStatus = await get(ref(db, "shopSettings/isOpen"));
 
-    if (!shopStatus.val()) {
-      alert("🚫 Shop is temporarily closed. We are not accepting orders.");
-      return;
-    }
+  if (!shopStatus.val()) {
+    alert("🚫 Shop is temporarily closed. We are not accepting orders.");
+    return;
+  }
 
+  // Cart Check
+  if (cart.length === 0) {
+    alert("Your cart is empty!");
+    return;
+  }
 
-    if (cart.length === 0) {
-      alert("Your cart is empty!");
-      return;
-    }
+  // Customer Details Check
+  if (!customer.name || !customer.phone || !customer.address) {
+    alert("Please fill all details!");
+    return;
+  }
 
-    if (!customer.name || !customer.phone || !customer.address) {
-      alert("Please fill all details!");
-      return;
-    }
+  // Generate Order ID
+  const autoOrderId =
+    "HV-" + Math.floor(10000 + Math.random() * 90000);
 
-    const autoOrderId =
-      "HV-" + Math.floor(10000 + Math.random() * 90000);
+  // यहीं से तुम्हारा पुराना code continue होगा
+  try {
+    await set(ref(db, `orders/${autoOrderId}`), {
+      orderId: autoOrderId,
 
-    try {
-      await set(ref(db, `orders/${autoOrderId}`), {
-        orderId: autoOrderId,
+      uid: auth.currentUser.uid,
+userName: auth.currentUser.displayName,
+email: auth.currentUser.email,
+photo: auth.currentUser.photoURL,
 
-        status: 1,
+      status: 1,
 
-        paymentMethod,
+      paymentMethod,
 
-        paymentStatus:
-          paymentMethod === "upi"
-            ? "Pending Verification"
-            : "Cash On Delivery",
+      paymentStatus:
+        paymentMethod === "upi"
+          ? "Pending Verification"
+          : "Cash On Delivery",
 
-        customerName: customer.name,
-        phone: customer.phone,
+      customerName: customer.name,
+      phone: customer.phone,
 
-        address: `${customer.address}, ${customer.landmark}, ${customer.pincode}`,
+      address: `${customer.address}, ${customer.landmark}, ${customer.pincode}`,
 
-        items: cart.map((item) => ({
-          id: item.id,
-          name: item.name,
-          image: item.image,
-          price: item.price,
-          quantity: item.quantity,
-          unitLabel: item.unitLabel,
-        })),
+      items: cart.map((item) => ({
+        id: item.id,
+        name: item.name,
+        image: item.image,
+        price: item.price,
+        quantity: item.quantity,
+        unitLabel: item.unitLabel,
+      })),
 
-        subtotal,
-        deliveryCharge,
-        platformFee,
-        total: grandTotal,
-        grandTotal,
+      subtotal,
+      deliveryCharge,
+      platformFee,
+      total: grandTotal,
+      grandTotal,
 
-        timestamp: Date.now(),
-      });
+      timestamp: Date.now(),
+    });
 
-      setOrderId(autoOrderId);
-      setIsOrdered(true);
+    setOrderId(autoOrderId);
+    setIsOrdered(true);
 
-      setTimeout(() => {
-        navigate(`/track-order?id=${autoOrderId}`);
-      }, 2500);
+    setTimeout(() => {
+      navigate(`/track-order?id=${autoOrderId}`);
+    }, 2500);
 
-    } catch (err) {
-      console.error(err);
-      alert("Failed to place order.");
-    }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Failed to place order.");
+  }
+};
+
+  
 
   return (
     <div className="max-w-5xl mx-auto p-6">
@@ -122,7 +160,7 @@ function Checkout() {
           <p className="mt-4 text-gray-600 text-lg">
             Thank you for shopping with
             <span className="font-bold text-green-700">
-              {" "}Heera's Vegetables
+              {" "}Heera's Veg Mart
             </span>
           </p>
 

@@ -15,6 +15,10 @@ import TrackOrder from "./pages/TrackOrder";
 import MyOrders from "./pages/MyOrders";
 import AdminPanel from "./pages/AdminPanel"; // Make sure this file exists
 import NotFound from "./pages/ErrorPage";
+import Login from "./pages/Login";
+import Profile from "./pages/Profile";
+
+
 
 function App() {
 
@@ -33,7 +37,10 @@ function App() {
         <Route path="/delivery" element={<Delivery />} />
         <Route path="/track-order" element={<TrackOrder />} />
         <Route path="/my-orders" element={<MyOrders />} />
-        
+        <Route path="/login" element={<Login />} />
+        <Route path="/profile" element={<Profile />} />
+         
+
         {/* Admin Dashboard - URL: /heera-admin-dashboard */}
         <Route path="/heera-admin-dashboard" element={<AdminPanel />} />
 
