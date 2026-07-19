@@ -13,17 +13,17 @@ function Navbar() {
 
   const [user, setUser] = useState(null);
 
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-    setUser(currentUser);
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
 
-  return () => unsubscribe();
-}, []);
+    return () => unsubscribe();
+  }, []);
 
-const handleLogout = async () => {
-  await signOut(auth);
-};
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -59,85 +59,85 @@ const handleLogout = async () => {
 
           <div className="flex items-center gap-4">
 
-  {user ? (
-  <div className="relative">
+            {user ? (
+              <div className="relative">
 
-    <img
-      src={user.photoURL}
-      alt="Profile"
-      onClick={() => setProfileOpen(!profileOpen)}
-      className="w-11 h-11 rounded-full border-2 border-white cursor-pointer hover:scale-105 transition"
-    />
+                <img
+                  src={user.photoURL}
+                  alt="Profile"
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="w-11 h-11 rounded-full border-2 border-white cursor-pointer hover:scale-105 transition"
+                />
 
-    {profileOpen && (
-      <div className="absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl overflow-hidden text-black z-50">
+                {profileOpen && (
+                  <div className="absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl overflow-hidden text-black z-50">
 
-        <div className="p-5 border-b">
+                    <div className="p-5 border-b">
 
-          <img
-            src={user.photoURL}
-            className="w-16 h-16 rounded-full mx-auto"
-          />
+                      <img
+                        src={user.photoURL}
+                        className="w-16 h-16 rounded-full mx-auto"
+                      />
 
-          <h2 className="text-center font-bold mt-3">
-            {user.displayName}
-          </h2>
+                      <h2 className="text-center font-bold mt-3">
+                        {user.displayName}
+                      </h2>
 
-          <p className="text-center text-sm text-gray-500">
-            {user.email}
-          </p>
+                      <p className="text-center text-sm text-gray-500">
+                        {user.email}
+                      </p>
 
-        </div>
+                    </div>
 
-        <Link
-          to="/profile"
-          className="block px-5 py-3 hover:bg-green-50"
-        >
-          👤 My Profile
-        </Link>
+                    <Link
+                      to="/profile"
+                      className="block px-5 py-3 hover:bg-green-50"
+                    >
+                      👤 My Profile
+                    </Link>
 
-        <Link
-          to="/my-orders"
-          className="block px-5 py-3 hover:bg-green-50"
-        >
-          📦 My Orders
-        </Link>
+                    <Link
+                      to="/my-orders"
+                      className="block px-5 py-3 hover:bg-green-50"
+                    >
+                      📦 My Orders
+                    </Link>
 
-        <button
-          onClick={handleLogout}
-          className="w-full text-left px-5 py-3 text-red-600 hover:bg-red-50"
-        >
-          🚪 Logout
-        </button>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-5 py-3 text-red-600 hover:bg-red-50"
+                    >
+                      🚪 Logout
+                    </button>
 
-      </div>
-    )}
+                  </div>
+                )}
 
-  </div>
-) : (
+              </div>
+            ) : (
 
-    <Link
-      to="/login"
-      className="hidden md:block bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold hover:bg-yellow-300"
-    >
-      Login
-    </Link>
-  )}
+              <Link
+                to="/login"
+                className="hidden md:block bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold hover:bg-yellow-300"
+              >
+                Login
+              </Link>
+            )}
 
-  <Link
-    to="/cart"
-    className="relative transition-transform duration-300 hover:scale-110"
-  >
-    <ShoppingCart size={28} />
+            <Link
+              to="/cart"
+              className="relative transition-transform duration-300 hover:scale-110"
+            >
+              <ShoppingCart size={28} />
 
-    {cart.length > 0 && (
-      <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-        {cart.length}
-      </span>
-    )}
-  </Link>
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {cart.length}
+                </span>
+              )}
+            </Link>
 
-</div>
+          </div>
 
         </div>
 
@@ -221,6 +221,8 @@ const handleLogout = async () => {
         </ul>
 
         {menuOpen && (
+
+
           <div className="md:hidden mt-4 bg-green-800 rounded-xl p-4">
 
             <Link
@@ -270,6 +272,36 @@ const handleLogout = async () => {
             >
               📞 Contact
             </Link>
+
+            {!user ? (
+              <Link
+                to="/login"
+                onClick={() => setMenuOpen(false)}
+                className="block py-3 border-t border-green-600"
+              >
+                🔐 Login
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/profile"
+                  onClick={() => setMenuOpen(false)}
+                  className="block py-3 border-t border-green-600"
+                >
+                  👤 My Profile
+                </Link>
+
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setMenuOpen(false);
+                  }}
+                  className="w-full text-left py-3 text-red-300"
+                >
+                  🚪 Logout
+                </button>
+              </>
+            )}
 
           </div>
         )}
