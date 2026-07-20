@@ -6,8 +6,12 @@ import { useNavigate } from "react-router-dom";
 import { ref, get, set } from "firebase/database";
 import { auth } from "../src/firebase";
 
+import { useUserLocation } from "../context/LocationContext";
+
 
 function Checkout() {
+
+  const { location } = useUserLocation();
   const { cart, totalPrice } = useCart();
   const navigate = useNavigate();
 
@@ -36,6 +40,7 @@ function Checkout() {
     }));
   }
 }, []);
+
 
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [isOrdered, setIsOrdered] = useState(false);
@@ -111,6 +116,17 @@ photo: auth.currentUser.photoURL,
       phone: customer.phone,
 
       address: `${customer.address}, ${customer.landmark}, ${customer.pincode}`,
+
+
+          location: {
+  latitude: location.latitude,
+  longitude: location.longitude,
+  address: location.address,
+  city: location.city,
+  state: location.state,
+  pincode: location.pincode,
+  country: location.country,
+},
 
       items: cart.map((item) => ({
         id: item.id,
@@ -326,6 +342,7 @@ photo: auth.currentUser.photoURL,
                 </p>
 
               </div>
+
 
             )}
 

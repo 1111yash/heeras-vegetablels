@@ -1,5 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -13,20 +12,16 @@ import About from "./pages/About";
 import Delivery from "./pages/Delivery";
 import TrackOrder from "./pages/TrackOrder";
 import MyOrders from "./pages/MyOrders";
-import AdminPanel from "./pages/AdminPanel"; // Make sure this file exists
+import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/ErrorPage";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 
-
-
 function App() {
-
-
-
   return (
-    <BrowserRouter>
+    <>
       <Navbar />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products />} />
@@ -39,16 +34,12 @@ function App() {
         <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
-         
-
-        {/* Admin Dashboard - URL: /heera-admin-dashboard */}
         <Route path="/heera-admin-dashboard" element={<AdminPanel />} />
-
-        {/* 404 Page */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+
       <Footer />
-    </BrowserRouter>
+    </>
   );
 }
 

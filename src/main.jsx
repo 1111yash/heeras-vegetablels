@@ -2,12 +2,20 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
-import { Toaster } from "react-hot-toast";
+import "leaflet/dist/leaflet.css";
+
+import { BrowserRouter } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
+import { LocationProvider } from "./context/LocationContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <CartProvider>
-  <App />
-  <Toaster position="top-right" />
-</CartProvider>
+  <React.StrictMode>
+    <BrowserRouter>
+      <CartProvider>
+        <LocationProvider>
+          <App />
+        </LocationProvider>
+      </CartProvider>
+    </BrowserRouter>
+  </React.StrictMode>
 );

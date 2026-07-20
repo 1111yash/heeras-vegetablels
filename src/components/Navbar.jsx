@@ -5,10 +5,20 @@ import { useCart } from "../context/CartContext";
 import { useEffect, useState } from "react";
 import { auth } from "../src/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-
-
+import { useUserLocation } from "../context/LocationContext";
+import { MapPin } from "lucide-react";
 
 function Navbar() {
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
+
+  const { location, getCurrentLocation } = useUserLocation();
+
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
   const { cart } = useCart();
 
   const [user, setUser] = useState(null);
@@ -25,7 +35,32 @@ function Navbar() {
     await signOut(auth);
   };
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const searchAddress = async (value) => {
+  setSearch(value);
+
+  if (value.length < 3) {
+    setResults([]);
+    return;
+  }
+
+  setSearchLoading(true);
+
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(value)}&limit=5`
+    );
+
+    const data = await res.json();
+
+    setResults(data);
+  } catch (err) {
+    console.error(err);
+  }
+
+  setSearchLoading(false);
+};
+
+
 
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -54,6 +89,39 @@ function Navbar() {
             <h1 className="text-xl md:text-2xl font-bold tracking-wide">
               Hira's Veg Mart
             </h1>
+
+            <button
+  onClick={() => setLocationOpen(true)}
+  className="hidden md:flex items-center gap-2 ml-5 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-xl transition"
+>
+  <MapPin size={18} />
+  <div className="text-left">
+    <p className="text-xs text-gray-200">
+      Deliver To
+    </p>
+
+    <p className="text-sm font-semibold">
+      {location.city || "Choose Location"}
+    </p>
+  </div>
+</button>
+
+            {/* Current Location */}
+            <div className="hidden lg:flex items-center gap-2 ml-5 bg-white/10 px-3 py-2 rounded-xl">
+
+              <MapPin size={18} className="text-yellow-300" />
+
+              <div className="leading-tight">
+                <p className="text-[11px] text-green-100">
+                  Delivering To
+                </p>
+
+                <p className="text-sm font-semibold text-white">
+                  {location.city || "Choose Location"}
+                </p>
+              </div>
+
+            </div>
 
           </div>
 
@@ -222,8 +290,27 @@ function Navbar() {
 
         {menuOpen && (
 
-
           <div className="md:hidden mt-4 bg-green-800 rounded-xl p-4">
+
+            <div className="mb-4 rounded-xl bg-green-700 border border-green-600 p-3">
+              <div className="flex items-center gap-3">
+                <MapPin size={20} className="text-yellow-300" />
+
+                <div>
+                  <p className="text-xs text-green-200">
+                    Delivering To
+                  </p>
+
+                <button
+  onClick={getCurrentLocation}
+  className="text-sm font-semibold text-white hover:text-yellow-300 transition"
+>
+  {location.city || "Choose Location"}
+</button>
+                </div>
+              </div>
+            </div>
+
 
             <Link
               to="/"
@@ -307,6 +394,42 @@ function Navbar() {
         )}
 
       </div>
+       {locationOpen && (
+  <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center">
+    <div className="bg-white w-[95%] max-w-md rounded-2xl p-6">
+
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-black">
+          Choose Delivery Location
+        </h2>
+
+        <button onClick={() => setLocationOpen(false)}>
+          <X className="text-black" />
+        </button>
+      </div>
+
+      <input
+  type="text"
+  value={search}
+  onChange={(e) => searchAddress(e.target.value)}
+  placeholder="Search address..."
+  className="w-full border rounded-xl px-4 py-3 text-black"
+/>
+
+      <button
+  onClick={async () => {
+    await getCurrentLocation();
+    setLocationOpen(false);
+  }}
+  className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl transition"
+>
+  📍 Use Current Location
+</button>
+
+    </div>
+  </div>
+)}
+
     </nav>
   );
 }

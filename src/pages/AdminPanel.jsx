@@ -298,8 +298,8 @@ function AdminPanel() {
           <button
             onClick={toggleShop}
             className={`px-5 py-3 rounded-xl font-bold text-white ${shopOpen
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-green-600 hover:bg-green-700"
+              ? "bg-red-600 hover:bg-red-700"
+              : "bg-green-600 hover:bg-green-700"
               }`}
           >
             {shopOpen ? "🔴 Close Shop" : "🟢 Open Shop"}
@@ -657,7 +657,10 @@ function AdminPanel() {
 
           ) : (
 
-            filteredOrders.map(([id, order]) => (
+          filteredOrders.map(([id, order]) => {
+  console.log(order);
+
+  return (
 
               <div
                 key={id}
@@ -731,6 +734,37 @@ function AdminPanel() {
 
                   <p className="mt-2 whitespace-pre-line">
                     📍 {order.address}
+
+                  
+                  
+
+                    {order.latitude && order.longitude && (
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${order.latitude},${order.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+                      >
+                        🚚 Navigate to Customer
+                      </a>
+                    )}
+
+                    {order.location && (
+                      <>
+                        <p className="mt-2">
+                          <strong>📍 GPS Location:</strong>
+                        </p>
+
+                        <a
+                          href={`https://www.google.com/maps?q=${order.location.latitude},${order.location.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block mt-2 bg-green-600 text-white px-3 py-2 rounded-lg"
+                        >
+                          🗺️ Open in Google Maps
+                        </a>
+                      </>
+                    )}
                   </p>
 
                   <div className="mt-4 flex flex-wrap gap-3">
@@ -930,7 +964,8 @@ function AdminPanel() {
 
               </div>
 
-            ))
+           );
+})
 
           )}
 
