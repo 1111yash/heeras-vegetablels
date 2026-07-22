@@ -16,13 +16,13 @@ function Checkout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-  if (!auth.currentUser) {
-    alert("Please Login First");
-    navigate("/login");
-  }
-}, [navigate]);
+    if (!auth.currentUser) {
+      alert("Please Login First");
+      navigate("/login");
+    }
+  }, [navigate]);
 
-  
+
 
   const [customer, setCustomer] = useState({
     name: "",
@@ -31,15 +31,15 @@ function Checkout() {
     landmark: "",
     pincode: "",
   });
-  
+
   useEffect(() => {
-  if (auth.currentUser) {
-    setCustomer((prev) => ({
-      ...prev,
-      name: auth.currentUser.displayName || "",
-    }));
-  }
-}, []);
+    if (auth.currentUser) {
+      setCustomer((prev) => ({
+        ...prev,
+        name: auth.currentUser.displayName || "",
+      }));
+    }
+  }, []);
 
 
   const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -59,107 +59,109 @@ function Checkout() {
     });
   };
 
-  
-const placeOrder = async () => {
 
-  // Login Check
-  if (!auth.currentUser) {
-    alert("Please Login First");
-    navigate("/login");
-    return;
-  }
+  const placeOrder = async () => {
 
-  // Shop Status Check
-  const shopStatus = await get(ref(db, "shopSettings/isOpen"));
+    // Login Check
+    if (!auth.currentUser) {
+      alert("Please Login First");
+      navigate("/login");
+      return;
+    }
 
-  if (!shopStatus.val()) {
-    alert("🚫 Shop is temporarily closed. We are not accepting orders.");
-    return;
-  }
+    // Shop Status Check
+    const shopStatus = await get(ref(db, "shopSettings/isOpen"));
 
-  // Cart Check
-  if (cart.length === 0) {
-    alert("Your cart is empty!");
-    return;
-  }
+    if (!shopStatus.val()) {
+      alert("🚫 Shop is temporarily closed. We are not accepting orders.");
+      return;
+    }
 
-  // Customer Details Check
-  if (!customer.name || !customer.phone || !customer.address) {
-    alert("Please fill all details!");
-    return;
-  }
+    // Cart Check
+    if (cart.length === 0) {
+      alert("Your cart is empty!");
+      return;
+    }
 
-  // Generate Order ID
-  const autoOrderId =
-    "HV-" + Math.floor(10000 + Math.random() * 90000);
+    // Customer Details Check
+    if (!customer.name || !customer.phone || !customer.address) {
+      alert("Please fill all details!");
+      return;
+    }
 
-  // यहीं से तुम्हारा पुराना code continue होगा
-  try {
-    await set(ref(db, `orders/${autoOrderId}`), {
-      orderId: autoOrderId,
+    // Generate Order ID
+    const autoOrderId =
+      "HV-" + Math.floor(10000 + Math.random() * 90000);
 
-      uid: auth.currentUser.uid,
-userName: auth.currentUser.displayName,
-email: auth.currentUser.email,
-photo: auth.currentUser.photoURL,
+    // यहीं से तुम्हारा पुराना code continue होगा
+    try {
+      await set(ref(db, `orders/${autoOrderId}`), {
+        orderId: autoOrderId,
 
-      status: 1,
+        uid: auth.currentUser.uid,
+        userName: auth.currentUser.displayName,
+        email: auth.currentUser.email,
+        photo: auth.currentUser.photoURL,
 
-      paymentMethod,
+        status: 1,
 
-      paymentStatus:
-        paymentMethod === "upi"
-          ? "Pending Verification"
-          : "Cash On Delivery",
+        paymentMethod,
 
-      customerName: customer.name,
-      phone: customer.phone,
+        paymentStatus:
+          paymentMethod === "upi"
+            ? "Pending Verification"
+            : "Cash On Delivery",
 
-      address: `${customer.address}, ${customer.landmark}, ${customer.pincode}`,
+        customerName: customer.name,
+        phone: customer.phone,
+
+        address: `${customer.address}, ${customer.landmark}, ${customer.pincode}`,
+
+        latitude: location.latitude,
+        longitude: location.longitude,
+
+        location: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+          address: location.address,
+          city: location.city,
+          state: location.state,
+          pincode: location.pincode,
+          country: location.country,
+        },
+
+        items: cart.map((item) => ({
+          id: item.id,
+          name: item.name,
+          image: item.image,
+          price: item.price,
+          quantity: item.quantity,
+          unitLabel: item.unitLabel,
+        })),
+
+        subtotal,
+        deliveryCharge,
+        platformFee,
+        total: grandTotal,
+        grandTotal,
+
+        timestamp: Date.now(),
+      });
+
+      setOrderId(autoOrderId);
+      setIsOrdered(true);
+
+      setTimeout(() => {
+        navigate(`/track-order?id=${autoOrderId}`);
+      }, 2500);
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to place order.");
+    }
+  };
 
 
-          location: {
-  latitude: location.latitude,
-  longitude: location.longitude,
-  address: location.address,
-  city: location.city,
-  state: location.state,
-  pincode: location.pincode,
-  country: location.country,
-},
-
-      items: cart.map((item) => ({
-        id: item.id,
-        name: item.name,
-        image: item.image,
-        price: item.price,
-        quantity: item.quantity,
-        unitLabel: item.unitLabel,
-      })),
-
-      subtotal,
-      deliveryCharge,
-      platformFee,
-      total: grandTotal,
-      grandTotal,
-
-      timestamp: Date.now(),
-    });
-
-    setOrderId(autoOrderId);
-    setIsOrdered(true);
-
-    setTimeout(() => {
-      navigate(`/track-order?id=${autoOrderId}`);
-    }, 2500);
-
-  } catch (err) {
-    console.error(err);
-    alert("Failed to place order.");
-  }
-};
-
-  
 
   return (
     <div className="max-w-5xl mx-auto p-6">

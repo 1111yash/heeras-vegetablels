@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import "leaflet/dist/leaflet.css";
+import { Toaster } from "react-hot-toast";
 
 import { BrowserRouter } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
@@ -14,6 +15,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <CartProvider>
         <LocationProvider>
           <App />
+           <Toaster
+      position="bottom-center"
+      reverseOrder={false}
+    />
         </LocationProvider>
       </CartProvider>
     </BrowserRouter>

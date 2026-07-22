@@ -4,17 +4,20 @@ const LocationContext = createContext();
 
 export const useUserLocation = () => useContext(LocationContext);
 
+// =============================
+// Delivery Distance Calculator
+// =============================
 export function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
 
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
 
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) *
-    Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) ** 2;
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
 
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
@@ -33,19 +36,97 @@ export function LocationProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Photon Suggestions
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  // =============================
+  // Load Saved Location
+  // =============================
   useEffect(() => {
-  const savedLocation = localStorage.getItem("deliveryLocation");
+    const saved = localStorage.getItem("deliveryLocation");
 
-  if (savedLocation) {
-    setLocation(JSON.parse(savedLocation));
-  }
-}, []);
+    if (saved) {
+      try {
+        setLocation(JSON.parse(saved));
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  }, []);
 
+  // =============================
+  // Save Location
+  // =============================
+  const saveLocation = (data) => {
+    setLocation(data);
+
+    localStorage.setItem(
+      "deliveryLocation",
+      JSON.stringify(data)
+    );
+  };
+
+  // =============================
+  // Photon Search
+  // =============================
+  const searchAddress = async (value) => {
+
+    setSearch(value);
+
+    if (value.trim().length < 2) {
+      setResults([]);
+      return;
+    }
+
+    setSearchLoading(true);
+
+    try {
+
+      const response = await fetch(
+        `https://photon.komoot.io/api/?q=${encodeURIComponent(
+          value + " Nagpur Maharashtra India"
+        )}&limit=8`
+      );
+
+      const data = await response.json();
+
+      setResults(data.features || []);
+
+    } catch (err) {
+
+      console.log(err);
+      setResults([]);
+
+    }
+
+    setSearchLoading(false);
+
+  };
+
+  // =============================
+  // Reverse Geocode
+  // =============================
+  const reverseGeocode = async (lat, lon) => {
+
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
+    );
+
+    return await response.json();
+
+  };
+
+  // =============================
+  // Current Location
+  // =============================
   const getCurrentLocation = () => {
+
     setError("");
 
     if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser.");
+      setError("Geolocation not supported");
       return;
     }
 
@@ -53,70 +134,55 @@ export function LocationProvider({ children }) {
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
 
         try {
-          // Free Reverse Geocoding (OpenStreetMap)
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
-          );
 
-          const data = await response.json();
-setLocation({
-  latitude: lat,
-  longitude: lon,
-  address: data.display_name || "",
-  city:
-    data.address.city ||
-    data.address.town ||
-    data.address.village ||
-    "",
-  state: data.address.state || "",
-  pincode: data.address.postcode || "",
-  country: data.address.country || "",
-});
+          const data = await reverseGeocode(lat, lon);
 
-localStorage.setItem(
-  "deliveryLocation",
-  JSON.stringify({
-    latitude: lat,
-    longitude: lon,
-    address: data.display_name || "",
-    city:
-      data.address.city ||
-      data.address.town ||
-      data.address.village ||
-      "",
-    state: data.address.state || "",
-    pincode: data.address.postcode || "",
-    country: data.address.country || "",
-  })
-);
-        } catch (err) {
-          console.error(err);
+          const newLocation = {
 
-          setLocation({
-
-            
             latitude: lat,
             longitude: lon,
-            address: "",
-            city: "",
-            state: "",
-            pincode: "",
-            country: "",
-          });
 
-          setError("Unable to fetch address.");
+            address: data.display_name || "",
+
+            city:
+              data.address?.city ||
+              data.address?.town ||
+              data.address?.village ||
+              data.address?.suburb ||
+              "",
+
+            state: data.address?.state || "",
+
+            pincode:
+              data.address?.postcode || "",
+
+            country:
+              data.address?.country || "",
+
+          };
+
+          saveLocation(newLocation);
+
+        } catch (err) {
+
+          console.log(err);
+
+          setError("Unable to fetch address");
+
         }
 
         setLoading(false);
+
       },
-      (err) => {
-        console.log(err);
+            (err) => {
 
         switch (err.code) {
+
           case 1:
             setError("Location permission denied.");
             break;
@@ -126,14 +192,15 @@ localStorage.setItem(
             break;
 
           case 3:
-            setError("Location request timed out.");
+            setError("Location timeout.");
             break;
 
           default:
-            setError("Unable to get your location.");
+            setError("Unable to get location.");
         }
 
         setLoading(false);
+
       },
       {
         enableHighAccuracy: true,
@@ -143,10 +210,70 @@ localStorage.setItem(
     );
   };
 
-  const clearLocation = () => {
-    setLocation({
+  // =============================
+  // Select Photon Result
+  // =============================
+  const selectLocation = async (item) => {
 
-        
+    try {
+
+      const lat = item.geometry.coordinates[1];
+      const lon = item.geometry.coordinates[0];
+
+      const data = await reverseGeocode(lat, lon);
+
+      const newLocation = {
+
+        latitude: lat,
+        longitude: lon,
+
+        address: data.display_name || "",
+
+        city:
+          data.address?.city ||
+          data.address?.town ||
+          data.address?.village ||
+          data.address?.suburb ||
+          item.properties.city ||
+          "Nagpur",
+
+        state:
+          data.address?.state ||
+          item.properties.state ||
+          "Maharashtra",
+
+        pincode:
+          data.address?.postcode || "",
+
+        country:
+          data.address?.country ||
+          item.properties.country ||
+          "India",
+
+      };
+
+      saveLocation(newLocation);
+
+      setSearch("");
+      setResults([]);
+
+    } catch (err) {
+
+      console.log(err);
+
+      setError("Unable to select location");
+
+    }
+
+  };
+
+  // =============================
+  // Clear Location
+  // =============================
+  const clearLocation = () => {
+
+    const empty = {
+
       latitude: null,
       longitude: null,
       address: "",
@@ -154,22 +281,47 @@ localStorage.setItem(
       state: "",
       pincode: "",
       country: "",
-    });
+
+    };
+
+    setLocation(empty);
+
+    localStorage.removeItem("deliveryLocation");
 
     setError("");
-  };
 
-  return (
+    setSearch("");
+
+    setResults([]);
+
+  };
+    return (
     <LocationContext.Provider
       value={{
+        // Current Location
         location,
         loading,
         error,
+
+        // Search
+        search,
+        setSearch,
+        results,
+        searchLoading,
+        searchAddress,
+
+        // Actions
         getCurrentLocation,
+        selectLocation,
         clearLocation,
+
+        // Helpers
+        calculateDistance,
       }}
     >
       {children}
     </LocationContext.Provider>
   );
 }
+
+export default LocationContext;
