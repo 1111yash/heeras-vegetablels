@@ -23,15 +23,21 @@ export function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 export function LocationProvider({ children }) {
-  const [location, setLocation] = useState({
-    latitude: null,
-    longitude: null,
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
-    country: "",
-  });
+ const [location, setLocation] = useState({
+  latitude: null,
+  longitude: null,
+
+  address: "",
+  shortAddress: "",
+
+  road: "",
+  area: "",
+
+  city: "",
+  state: "",
+  pincode: "",
+  country: "",
+});
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -105,6 +111,35 @@ export function LocationProvider({ children }) {
 
   };
 
+  const formatAddress = (address) => {
+  const road =
+    address.road ||
+    address.pedestrian ||
+    address.residential ||
+    "";
+
+  const area =
+    address.suburb ||
+    address.neighbourhood ||
+    address.city_district ||
+    address.quarter ||
+    "";
+
+  const city =
+    address.city ||
+    address.town ||
+    address.village ||
+    "Nagpur";
+
+  const postcode = address.postcode || "";
+
+  const state = address.state || "Maharashtra";
+
+  return [road, area, `${city}${postcode ? " - " + postcode : ""}`, state]
+    .filter(Boolean)
+    .join(", ");
+};
+
   // =============================
   // Reverse Geocode
   // =============================
@@ -142,30 +177,45 @@ export function LocationProvider({ children }) {
 
           const data = await reverseGeocode(lat, lon);
 
-          const newLocation = {
+             const road =
+  data.address?.road ||
+  data.address?.pedestrian ||
+  data.address?.residential ||
+  "";
 
-            latitude: lat,
-            longitude: lon,
+const area =
+  data.address?.suburb ||
+  data.address?.neighbourhood ||
+  data.address?.quarter ||
+  data.address?.city_district ||
+  "";
 
-            address: data.display_name || "",
+const city =
+  data.address?.city ||
+  data.address?.town ||
+  data.address?.village ||
+  "Nagpur";
 
-            city:
-              data.address?.city ||
-              data.address?.town ||
-              data.address?.village ||
-              data.address?.suburb ||
-              "",
+const state = data.address?.state || "Maharashtra";
+const pincode = data.address?.postcode || "";
+const country = data.address?.country || "India";  
 
-            state: data.address?.state || "",
 
-            pincode:
-              data.address?.postcode || "",
+const newLocation = {
+  latitude: lat,
+  longitude: lon,
 
-            country:
-              data.address?.country || "",
+  road,
+  area,
 
-          };
+  address: formatAddress(data.address),
+  shortAddress: `${area || road}, ${city}`,
 
+  city,
+  state,
+  pincode,
+  country,
+};
           saveLocation(newLocation);
 
         } catch (err) {
@@ -222,36 +272,53 @@ export function LocationProvider({ children }) {
 
       const data = await reverseGeocode(lat, lon);
 
+      const road =
+  data.address?.road ||
+  data.address?.pedestrian ||
+  data.address?.residential ||
+  "";
+
+const area =
+  data.address?.suburb ||
+  data.address?.neighbourhood ||
+  data.address?.quarter ||
+  data.address?.city_district ||
+  "";
+
+const city =
+  data.address?.city ||
+  data.address?.town ||
+  data.address?.village ||
+  item.properties.city ||
+  "Nagpur";
+
+const state =
+  data.address?.state ||
+  item.properties.state ||
+  "Maharashtra";
+
+const pincode = data.address?.postcode || "";
+
+const country =
+  data.address?.country ||
+  item.properties.country ||
+  "India";
+
       const newLocation = {
+  latitude: lat,
+  longitude: lon,
 
-        latitude: lat,
-        longitude: lon,
+  road,
+  area,
 
-        address: data.display_name || "",
+  address: formatAddress(data.address),
+  shortAddress: `${area || road}, ${city}`,
 
-        city:
-          data.address?.city ||
-          data.address?.town ||
-          data.address?.village ||
-          data.address?.suburb ||
-          item.properties.city ||
-          "Nagpur",
-
-        state:
-          data.address?.state ||
-          item.properties.state ||
-          "Maharashtra",
-
-        pincode:
-          data.address?.postcode || "",
-
-        country:
-          data.address?.country ||
-          item.properties.country ||
-          "India",
-
-      };
-
+  city,
+  state,
+  pincode,
+  country,
+};
       saveLocation(newLocation);
 
       setSearch("");
@@ -273,16 +340,20 @@ export function LocationProvider({ children }) {
   const clearLocation = () => {
 
     const empty = {
+  latitude: null,
+  longitude: null,
 
-      latitude: null,
-      longitude: null,
-      address: "",
-      city: "",
-      state: "",
-      pincode: "",
-      country: "",
+  address: "",
+  shortAddress: "",
 
-    };
+  road: "",
+  area: "",
+
+  city: "",
+  state: "",
+  pincode: "",
+  country: "",
+};
 
     setLocation(empty);
 

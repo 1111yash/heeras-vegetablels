@@ -109,7 +109,7 @@ function Navbar() {
             </p>
 
             <p className="font-semibold text-sm max-w-[220px] truncate">
-              {location.address || "Choose Location"}
+              {location.shortAddress || "Choose Location"}
             </p>
           </div>
         </button>
@@ -253,7 +253,7 @@ function Navbar() {
         </p>
 
         <p className="font-semibold truncate">
-          {location.address || "Choose Location"}
+          {location.shortAddress || "Choose Location"}
         </p>
       </div>
     </button>
