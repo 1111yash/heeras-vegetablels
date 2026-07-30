@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { ref, onValue, get } from "firebase/database";
+import { ref, onValue } from "firebase/database";
 import { db } from "../src/firebase";
 import { useCart } from "../context/CartContext";
 import toast from "react-hot-toast";
@@ -19,9 +19,7 @@ function Products() {
   useEffect(() => {
     const productRef = ref(db, "products");
 
-
-
-    onValue(productRef, (snapshot) => {
+    return onValue(productRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
 
@@ -143,7 +141,7 @@ function Products() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products
           .filter((item) =>
-            item.name.toLowerCase().includes(search.toLowerCase())
+            (item.name || "").toLowerCase().includes(search.toLowerCase())
           )
           .filter((item) => item.inStock !== false)
           .filter((item) =>

@@ -15,7 +15,9 @@ import MyOrders from "./pages/MyOrders";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/ErrorPage";
 import Login from "./pages/Login";
+import AdminLogin from "./pages/AdminLogin";
 import Profile from "./pages/Profile";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -34,8 +36,17 @@ function App() {
         <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/heera-admin-dashboard" element={<AdminPanel />} />
+        <Route path="/heera-admin-login" element={<AdminLogin />} />
+        <Route
+          path="/heera-admin-dashboard"
+          element={
+            <ProtectedRoute>
+              <AdminPanel />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<NotFound />} />
+
       </Routes>
 
       <Footer />
