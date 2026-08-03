@@ -138,7 +138,7 @@ function Products() {
       </div>
 
       {/* Products Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {products
           .filter((item) =>
             (item.name || "").toLowerCase().includes(search.toLowerCase())
@@ -164,16 +164,17 @@ function Products() {
                 key={item.id}
                 className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
               >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-52 object-cover"
-                />
+             <img
+  src={item.image}
+  alt={item.name}
+  className="w-full h-44 object-cover rounded-t-xl"
+/>
+                <div className="p-3">
+                  <h2 className="text-xl font-bold">{item.name}</h2><h2 className="text-sm font-semibold line-clamp-2 min-h-[40px]">
+  {item.name}
+</h2>
 
-                <div className="p-4">
-                  <h2 className="text-xl font-bold">{item.name}</h2>
-
-                  <p className="text-green-700 font-semibold mt-2">
+                 <p className="text-lg font-bold text-black mt-2">
                     ₹{price}
                   </p>
 
@@ -190,7 +191,7 @@ function Products() {
                           [item.id]: e.target.value,
                         })
                       }
-                      className="w-full mt-1 border rounded-lg p-2"
+                      className="w-full mt-1 border rounded-md p-1 text-sm"
                     >
                       {options.map((opt) => (
                         <option key={opt.value} value={opt.value}>
