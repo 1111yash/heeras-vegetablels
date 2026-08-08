@@ -102,6 +102,27 @@ function VoiceAssistant() {
     console.log("Voice:", text);
 
     // =============================
+// VOICE STOP COMMAND
+// =============================
+
+if (
+  text.includes("stop voice assistant") ||
+  text.includes("stop assistant") ||
+  text.includes("voice assistant stop") ||
+  text.includes("stop listening")
+) {
+  SpeechRecognition.stopListening();
+
+  setIsAwake(false);
+
+  toast.success("Voice Assistant Stopped");
+  speak("Voice assistant stopped");
+
+  resetTranscript();
+  return;
+}
+
+    // =============================
     // Wake Word
     // =============================
     if (!isAwake) {
@@ -126,6 +147,85 @@ function VoiceAssistant() {
 
       return;
     }
+// =============================
+// VOICE SCROLL
+// =============================
+
+// =============================
+// VOICE SCROLL
+// =============================
+
+if (
+  text.includes("scroll down") ||
+  text.includes("scrolling down") ||
+  text === "down" ||
+  text === "next"
+) {
+  console.log("VOICE SCROLL DOWN");
+
+  window.scrollBy({
+    top: 600,
+    left: 0,
+    behavior: "smooth",
+  });
+
+  speak("Scrolling down");
+  resetTranscript();
+  return;
+}
+
+if (
+  text.includes("scroll up") ||
+  text.includes("scrolling up") ||
+  text === "up" ||
+  text === "back"
+) {
+  console.log("VOICE SCROLL UP");
+
+  window.scrollBy({
+    top: -600,
+    left: 0,
+    behavior: "smooth",
+  });
+
+  speak("Scrolling up");
+  resetTranscript();
+  return;
+}
+
+if (
+  text === "top" ||
+  text.includes("go to top")
+) {
+  console.log("VOICE GO TOP");
+
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: "smooth",
+  });
+
+  speak("Going to top");
+  resetTranscript();
+  return;
+}
+
+if (
+  text === "bottom" ||
+  text.includes("go to bottom")
+) {
+  console.log("VOICE GO BOTTOM");
+
+  window.scrollTo({
+    top: document.documentElement.scrollHeight,
+    left: 0,
+    behavior: "smooth",
+  });
+
+  speak("Going to bottom");
+  resetTranscript();
+  return;
+}
     if (
       text.includes("checkout") ||
       text.includes("check out") ||
@@ -453,20 +553,31 @@ if (
     let command = text.toLowerCase();
 
     const words = {
-      tomato: ["tamatar", "tamater"],
-      onion: ["pyaz", "pyaaj"],
-      potato: ["aloo", "aalu"],
-      coriander: ["dhaniya"],
-      cabbage: ["patta gobi"],
-      cauliflower: ["phool gobi"],
-      eggplant: ["baingan", "brinjal"],
-      chilli: ["mirchi", "green chilli"],
-      ginger: ["adrak"],
-      garlic: ["lahsun"],
-      egg: ["anda", "ande", "eggs"],
-      cart: ["card", "kard", "kaart"],
-      checkout: ["check out"],
-    };
+  tomato: ["tamatar", "tamater"],
+  onion: ["pyaz", "pyaaj", "kanda"],
+  potato: ["aloo", "aalu"],
+  carrot: ["gajar"],
+  cabbage: ["patta gobi", "patta gobhi"],
+  cauliflower: ["phool gobi", "ful gobi"],
+  eggplant: ["baingan", "brinjal"],
+  chilli: ["mirchi", "hari mirch", "green chilli"],
+  ginger: ["adrak"],
+  garlic: ["lahsun"],
+  coriander: ["dhaniya", "dhania"],
+  spinach: ["palak"],
+  peas: ["matar"],
+  radish: ["mooli"],
+  beetroot: ["chukandar"],
+  capsicum: ["shimla mirch"],
+  lemon: ["nimbu"],
+  cucumber: ["kheera", "kakdi"],
+  okra: ["bhindi"],
+  pumpkin: ["kaddu"],
+  egg: ["anda", "ande", "eggs"],
+
+  cart: ["card", "kard", "kaart"],
+  checkout: ["check out"],
+};
 
     Object.entries(words).forEach(([key, list]) => {
       list.forEach((word) => {
