@@ -168,6 +168,27 @@ useEffect(() => {
   };
 }, []);
 
+// =============================
+// VOICE PLACE ORDER
+// =============================
+
+useEffect(() => {
+  const handleVoicePlaceOrder = () => {
+    placeOrder();
+  };
+
+  window.addEventListener(
+    "voicePlaceOrder",
+    handleVoicePlaceOrder
+  );
+
+  return () => {
+    window.removeEventListener(
+      "voicePlaceOrder",
+      handleVoicePlaceOrder
+    );
+  };
+}, []);
   
 
 // =============================
