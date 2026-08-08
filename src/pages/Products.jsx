@@ -138,97 +138,100 @@ function Products() {
       </div>
 
       {/* Products Grid */}
-<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        {products
-          .filter((item) =>
-            (item.name || "").toLowerCase().includes(search.toLowerCase())
-          )
-          .filter((item) => item.inStock !== false)
-          .filter((item) =>
-            category === "All" ? true : item.category === category
-          )
-          .map((item) => {
-            // यहाँ ऑटोमैटिक सही यूनिट टाइप निकाला जा रहा है
-            const actualUnitType = determineUnitType(item);
-            const { defaultQty, options } = getUnitOptions(actualUnitType);
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 items-stretch">        {products
+        .filter((item) =>
+          (item.name || "").toLowerCase().includes(search.toLowerCase())
+        )
+        .filter((item) => item.inStock !== false)
+        .filter((item) =>
+          category === "All" ? true : item.category === category
+        )
+        .map((item) => {
+          // यहाँ ऑटोमैटिक सही यूनिट टाइप निकाला जा रहा है
+          const actualUnitType = determineUnitType(item);
+          const { defaultQty, options } = getUnitOptions(actualUnitType);
 
-            const qty = selectedQty[item.id] || defaultQty;
-            const price = calculatePrice(item.price, qty, actualUnitType);
+          const qty = selectedQty[item.id] || defaultQty;
+          const price = calculatePrice(item.price, qty, actualUnitType);
 
-            // सही लेबल (जैसे 500 ml या 1 kg) स्क्रीन पर दिखाने के लिए
-            const currentOption = options.find((opt) => opt.value === qty);
-            const unitLabel = currentOption ? currentOption.label : qty;
+          // सही लेबल (जैसे 500 ml या 1 kg) स्क्रीन पर दिखाने के लिए
+          const currentOption = options.find((opt) => opt.value === qty);
+          const unitLabel = currentOption ? currentOption.label : qty;
 
-            return (
-              <div
-                key={item.id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
-              >
-             <img
-  src={item.image}
-  alt={item.name}
-  className="w-full h-44 object-cover rounded-t-xl"
-/>
-                <div className="p-3">
-                  <h2 className="text-xl font-bold">{item.name}</h2><h2 className="text-sm font-semibold line-clamp-2 min-h-[40px]">
-  {item.name}
-</h2>
+          return (
+            <div
+              key={item.id}
+              className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col h-full"
+            >
+              <img
+                src={item.image}
+                alt={item.name}
+                className="w-full h-44 object-cover rounded-t-xl"
+              />
+              <div className="p-3 flex flex-col flex-1">
+                <h2 className="text-lg font-bold line-clamp-2 min-h-[56px]">
+                  {item.name}
+                </h2>
 
-                 <p className="text-lg font-bold text-black mt-2">
-                    ₹{price}
-                  </p>
+                <p className="text-lg font-bold text-black mt-2">
+                  ₹{price}
+                </p>
 
-                  <div className="mt-3">
-                    <label className="text-sm font-medium">
-                      Select Quantity
-                    </label>
+                <div className="mt-3">
+                  <label className="text-sm font-medium">
+                    Select Quantity
+                  </label>
 
-                    <select
-                      value={qty}
-                      onChange={(e) =>
-                        setSelectedQty({
-                          ...selectedQty,
-                          [item.id]: e.target.value,
-                        })
-                      }
-                      className="w-full mt-1 border rounded-md p-1 text-sm"
-                    >
-                      {options.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <button
-                    disabled={!shopOpen}
-                    onClick={() => {
-                      if (!shopOpen) {
-                        toast.error("🚫 Shop is temporarily closed");
-                        return;
-                      }
-
-                      addToCart({
-                        ...item,
-                        quantity: qty,
-                        unitLabel,
-                        price,
-                      });
-
-                      toast.success(`${item.name} (${unitLabel}) added to cart!`);
-                    }}
-                    className={`mt-4 w-full py-2 rounded-lg text-white ${shopOpen
-                      ? "bg-green-600 hover:bg-green-700"
-                      : "bg-gray-400 cursor-not-allowed"
-                      }`}
+                  <select
+                    value={qty}
+                    onChange={(e) =>
+                      setSelectedQty({
+                        ...selectedQty,
+                        [item.id]: e.target.value,
+                      })
+                    }
+                    className="w-full mt-1 border rounded-md p-1 text-sm"
                   >
-                    {shopOpen ? "Add to Cart" : "🚫 Shop Closed"}
-                  </button>
+                    {options.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <div className="mt-auto pt-4">
+                    <button
+                      disabled={!shopOpen}
+                      onClick={() => {
+                        if (!shopOpen) {
+                          toast.error("🚫 Shop is temporarily closed");
+                          return;
+                        }
+
+                        addToCart({
+                          ...item,
+                          quantity: qty,
+                          unitLabel,
+                          price,
+                        });
+
+                        toast.success(`${item.name} (${unitLabel}) added to cart!`);
+                      }}
+                      className={`w-full py-2 rounded-lg text-white ${shopOpen
+                          ? "bg-green-600 hover:bg-green-700"
+                          : "bg-gray-400 cursor-not-allowed"
+                        }`}
+                    >
+                      {shopOpen ? "Add to Cart" : "🚫 Shop Closed"}
+                    </button>
+                  </div>
                 </div>
+
+              
               </div>
-            );
-          })}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

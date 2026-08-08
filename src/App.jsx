@@ -18,6 +18,7 @@ import Login from "./pages/Login";
 import AdminLogin from "./pages/AdminLogin";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
+import VoiceAssistant from "./components/VoiceAssistant";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/heera-admin-login" element={<AdminLogin />} />
+
         <Route
           path="/heera-admin-dashboard"
           element={
@@ -48,6 +50,9 @@ function App() {
         <Route path="*" element={<NotFound />} />
 
       </Routes>
+
+              <VoiceAssistant />
+
 
       <Footer />
     </>
